@@ -1,6 +1,6 @@
 *============================================================================
 /* Group number: 1 */
-/* Group composition: Stefano Graziosi, Gabriele Molè, Sofia Briozzo */
+/* Group composition: Sara Bernardoni, Gabriele Molè, Florens Schlosser */
 *============================================================================
 
 *=============================================================================
@@ -58,7 +58,7 @@ if ("`user'" == "gabrielemole") {
 /* Use the file jtrain2 													*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d67f27161b9899cedb19c8ff1016402746/ps1/jtrain2.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Construct a table checking for balance across treatment and control for the following covariates: age educ black hisp nodegree re74 re75.
 Name it TABLE 1.
@@ -211,7 +211,7 @@ esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
 
 * SBLOCCA STO COSO PER AVERE ACCESSO ALL'ALTRO DATASET | NON USARLI ENTRAMBI, QUESTO CANCELLA IL DATASET PRECEDENTE *
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d67f27161b9899cedb19c8ff1016402746/ps1/jtrain3.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain3.dta", clear
 
 /* (a) Do a table with the same structure of TABLE 1 of item (a) in question 1 for the following covariates: age educ black hisp re74 re75 (note that nodegree is not present in the current dataset.) Add the corresponding columns to TABLE 1. */
 
@@ -437,7 +437,7 @@ addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 You may use the lassopack package in Stata or the hdm package in R to perform your analysis. To answer the questions below, read Belloni et al. (2014) to understand the "double selection" procedure and check the help files of the commands above in the language you chose. */
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d67f27161b9899cedb19c8ff1016402746/ps1/jtrain2.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Revisit your analysis of the data set jtrain2 in exercise 1 as a post-Lasso OLS estimation. */
 
@@ -546,7 +546,7 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 
 * (b) 
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/6439a5d44431b6a76c8de6989f44bf7adc461cbb/ps1/ps1_data/jtrain2.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 *calculating the simple difference in means
 *seed set at 20295 to mantain coherence
