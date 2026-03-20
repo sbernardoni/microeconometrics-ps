@@ -42,10 +42,10 @@ if ("`user'" == "erick") {
     global filepath "/home/erick/TEMP/"
 }
 
-if ("`user'" == "stefanograziosi") {
-	cd "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps"
-    global filepath "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
+if ("`user'" == "Sara") {
+	cd "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps"
+    global filepath "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1"
+	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1\ps1_output"
 }
 
 if ("`user'" == "gabrielemole") {
