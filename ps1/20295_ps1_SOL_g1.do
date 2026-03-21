@@ -574,9 +574,7 @@ ritest train _b[train], reps(10000) seed(20295): ///
 
 	/* (i) Briefly explain the difference between the procedure used as the default in Stata for the calculation of standard errors (HC1) and the one proposed by the Data Colada post (HC3). */
 	
-		/* A: In HC1 Robust Standard Errors, the diagonal elementes of the variance-covariance matrix are substitued with Robust Standard error, based on non-constant variance, which are the squared residuals, weighted by the following coefficient n/(n-k). HC1 robust standard errors are the default in Stata. 
-
-HC3 Robust Standard Errors, on the other hand, are widely used and considered as the best standard errors when heteroskedasticity is present. The diagonal elements of the variance-covariance matrix are replaced by the squared residuals divided by (1-h)^2, h being the hat values that range from 0 to 1. */
+		/* A: HC1 robust standard errors are the default setting in Stata. In this framework, the diagonal elements of the variance-covariance matrix are the squared residuals weighted by the coefficient n/(n-k), where k is the number of regressors. This allows the conditional variance of the errors to be non-constant, which departs from the classical assumptions of the linear regression model. On the contrary, with HC3 robust standard errors the diagonal entries of the variance-covariance matrix are the squared residuals weighted by (1-h)^2, where h is the leverage of each observation in the regression model and ranges from 0 to 1. This approach is widely used and considered as preferrable under conditional heteroskedasticity. */
 	
 	/* (ii) Using the dataset jtrain2, rerun the analysis you have performed in exercise 1, now calculating the standard errors based on HC3 (this is done in Stata using the option vce() in your regression command). */
 
@@ -602,15 +600,11 @@ bootstrap _b, reps(1000): regress re78 train age educ black hisp
 /* Third regression */
 bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 
-		/* A: Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error */
+		/* A: Bootstrapping is a non-parametric statistical method where the sampling variation of an estimate is obtained by resampling the data with replacement multiple times. For each resample obtained with this procedure (the standard on Stata is 50), the statistic of interest is then computed as usual. Finally, the standard deviation of the statistic across replications is obtained, which is called the bootstrap standard error. */
 	
 	/* (iv) Do any of your conclusions regarding the effect of the training program change based on the analysis performed in this exercise? Based on the discussion provided in the Data Colada post, can you think of a reason for why your results using HC3 should or shouldn't change for this exercise? 
 
-		/* A: The regressions performed in this exercise yield the same results as the regressions performed in exercise 1. In particular, the coefficients for all three specifications (non-robust standard errors, HC3 and bootstrapping) are substantially the same, and the only difference between the results of the two analyses are the standard errors, even though the variation is small and does not change the significance of the results found. HC3 standard errors are slightly higher, in line with theoretical expectations.
-		
-		The fact that coefficients remain consistent across specifications, with only slight change in the confidence intervals, is an indicator of the robustness of the analysis performed. 
-		
-		Based on the discussion in the Data Colada post, it was to be expected that the results do not change, since the sample size is larger than 250 observations, and we know that HC3 performs much better than the HC1 default standard error option when the sample size is small. 
-		
-		Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. */
+		/* A: The results obtained in this exercise are essentially the same as the ones obtained in exercise 1. Indeed, the coefficients in the three specification are remarkably similar, and there is only a small variation in their standard errors, with no effect on their significance. This suggests that our analysis is robust, and that the results obtained – as well as the the conclusions that can be drawn from them – are not conditional on a certain specification.
+
+As expected from their formulation, the robust standard errors with the HC3 specification are slightly higher when compared to the others. Nonetheless, as suggested by the Data Colada post, the fact that our results are unchanged after the application of HC3 robust standard errors is not surprising: the difference in terms of performance between the specifications happens in fact with samples under 250 observations, which is not the case in this context. */
 	
