@@ -738,9 +738,7 @@ matrix list q4_trim_summary
 
 esttab matrix(q4_trim_summary) using "q4_trimming_summary.tex", replace tex ///
     title("Question 4(a)(3): Trimming summary") ///
-    cells("result(fmt(4))") nomtitles
-	
-*=============================================================================
+    cells("result(fmt(4))") nomtitles			*=============================================================================
 /* 								Question 5 									*/
 /* Use the jtrain2 data set.
 Read Athey and Imbens (2017) (focus on those sections where the authors discuss how to perform inference in completely randomized experiments; in particular, section 4). */
