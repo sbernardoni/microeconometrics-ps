@@ -525,26 +525,29 @@ regress re78 train age_34 age_46
 			
 *=============================================================================
 /* 								Question 4 									*/
-/*  */
+/* Over time, several articles have revisited LaLonde's results and provided a rich discussion about the best practices when working with observational data. A recent article, "Comparing Experimental and Nonexperimental Methods: What Lessons Have We Learned Four Decades after LaLonde (1986)?", summarizes this debate and discusses some of the recent advances on the topic. Read Imbens and Xu (2025) and
+answer the questions below. */
 *=============================================================================
 
 use "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\jtrain3.dta", clear
 
-*------------------------------------------------------------------------------
-* Setup for Question 4
-*------------------------------------------------------------------------------
-
+* init covariates
 local X "age educ black hisp re74"
 
 * Create an id for merges after H2O predictions
 capture drop id_q4
 gen id_q4 = _n
 
-*=============================================================================
-/* (a)(1) Propensity score via logistic regression                             */
-*=============================================================================
 
+/* (a) Follow the approach from Imbens and Xu (2025) and estimate the ATT for the
+training program based on jtrain3. For this, estimate propensity scores using
+(i) logistic regression and (ii) a random forest classifier. Use the same covariate set X in both models: X = {age educ black hisp re74}                             */
+
+/* (a)(1) Propensity score via logistic regression: Estimate \hat e logit(X) via logistic regression. Report summary statistics of \hat e logit separately for treated and controls (min/25%/median/75%/max), and produce an overlap plot (treated vs. control).*/
+
+* logit regress train on covariates
 logit train `X', vce(robust)
+* extract \hat e
 predict double pscore_logit, pr
 
 * Summary statistics for pscore_logit by treatment status
@@ -567,11 +570,12 @@ matrix rownames q4_logit_sum = Treated Controls
 matrix colnames q4_logit_sum = Min P25 Median P75 Max
 matrix list q4_logit_sum
 
+* save
 esttab matrix(q4_logit_sum) using "q4_logit_ps_summary.tex", replace tex ///
     title("Question 4(a)(1): Logistic propensity score summary") ///
     cells("result(fmt(4))") nomtitles
 
-* Overlap plot: logistic propensity score
+* Overlap plot
 twoway ///
     (histogram pscore_logit if train==1 & !missing(pscore_logit), ///
         fraction start(0) width(0.05) ///
@@ -587,27 +591,26 @@ twoway ///
     title("Overlap plot: logistic propensity score")
 graph export "q4_overlap_logit.png", replace
 
-*=============================================================================
-/* (a)(2) Propensity score via random forest classifier                        */
-*=============================================================================
 
-* The code below uses h2o.
+/* (a)(2) Propensity score via random forest classifier: Estimate \hat e RF(X) via a random forest (there are several specificities regarding random forests that we will not discuss in this exercise. For our scope, use the probability forest command from grf if using R or the h2oml rfbinclass command in Stata). Report the same summaries and overlap plot.        */
+
+* The code below uses h2o. Please make sure that you have downloaded the h2o.jar file and placed it into an ado folder.
 
 tempfile jtrain3_base rf_preds
 save `jtrain3_base', replace
 
+* initialise h2o procedure
 capture noisily h2o init
 
 _h2oframe put, into(h2o_jtrain3)
 _h2oframe change h2o_jtrain3
 _h2oframe factor train, replace
 
-* Random forest binary classification
-* The second predicted probability corresponds to Pr(train==1)
+* Important: the second predicted probability corresponds to Pr(train==1) which we want
 h2oml rfbinclass train `X', h2orseed(20295) ntrees(500)
 h2omlpredict rf_pr0 rf_pr1, pr
 
-* Bring H2O frame back to Stata
+* bring h2o frame back to Stata
 clear
 _h2oframe get h2o_jtrain3
 keep id_q4 rf_pr0 rf_pr1
@@ -639,6 +642,7 @@ matrix rownames q4_rf_sum = Treated Controls
 matrix colnames q4_rf_sum = Min P25 Median P75 Max
 matrix list q4_rf_sum
 
+* save
 esttab matrix(q4_rf_sum) using "q4_rf_ps_summary.tex", replace tex ///
     title("Question 4(a)(2): Random forest propensity score summary") ///
     cells("result(fmt(4))") nomtitles
@@ -659,18 +663,22 @@ twoway ///
     title("Overlap plot: random forest propensity score")
 graph export "q4_overlap_rf.png", replace
 
-*=============================================================================
-/* (a)(3) ATT-style trimming rule: keep if pscore <= 0.8                      */
-*=============================================================================
 
+/* (a)(3) ATT-style trimming rule: keep if pscore <= 0.8: Following a similar strategy to the one used by Imbens and Xu (2025), apply the following ATT-style trimming rule separately for each estimator: keep unit i if pscore (i) <= 0.8. For each estimator, report: (i) the implied cutoff, (ii) the number
+and fraction of treated units trimmed, and (iii) a brief characterization of which
+treated units are trimmed (compare covariate means for trimmed vs. kept treated,
+or provide a short table). */
+
+* init binary vectors for kept individuals
 capture drop keep_logit keep_rf trimmed_logit trimmed_rf
 gen byte keep_logit = (pscore_logit <= 0.8)
 gen byte keep_rf    = (pscore_rf    <= 0.8)
 
+* init binary vectors for trimmed treated individuals 
 gen byte trimmed_logit = (train==1 & keep_logit==0)
 gen byte trimmed_rf    = (train==1 & keep_rf==0)
 
-* Implied cutoff max_{W=0} \hat e(X)
+* Implied cutoff max_{W=0} \hat e(X): extract max propensity score of controls
 quietly summarize pscore_logit if train==0, detail
 scalar cutoff_logit_controls = r(max)
 
@@ -695,7 +703,7 @@ scalar Frac_trim_rf = Ntreat_trim_rf / Ntreat_total
 display "Treated trimmed (logit): " Ntreat_trim_logit " out of " Ntreat_total " = " Frac_trim_logit
 display "Treated trimmed (RF):    " Ntreat_trim_rf " out of " Ntreat_total " = " Frac_trim_rf
 
-* Short characterization: compare covariate means for trimmed vs kept treated
+* compare covariate means for trimmed vs kept treated
 matrix q4_trim_chars = J(5,4,.)
 local row = 1
 foreach var of local X {
@@ -718,11 +726,12 @@ matrix colnames q4_trim_chars = ///
     KeptTreated_rf TrimmedTreated_rf
 matrix list q4_trim_chars
 
+* save
 esttab matrix(q4_trim_chars) using "q4_trimmed_treated_characterization.tex", replace tex ///
     title("Question 4(a)(3): Kept vs. trimmed treated units") ///
     cells("result(fmt(3))") nomtitles
 
-* Also store a compact trimming summary
+* store a compact trimming summary
 matrix q4_trim_summary = J(2,3,.)
 matrix q4_trim_summary[1,1] = cutoff_logit_controls
 matrix q4_trim_summary[1,2] = Ntreat_trim_logit
