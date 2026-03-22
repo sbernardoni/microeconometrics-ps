@@ -43,7 +43,6 @@ if ("`user'" == "erick") {
 }
 
 if ("`user'" == "Sara") {
-	cd "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps"
     global filepath "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1"
 	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1\ps1_output"
 }
