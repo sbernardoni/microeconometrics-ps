@@ -103,7 +103,7 @@ matrix rownames table_1a = age educ black hisp nodegree re74 re75
 
 matrix list table_1a
 
-esttab matrix(table_1a) using "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\outputs\table1_tex", replace tex ///
+esttab matrix(table_1a) using "ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -576,8 +576,8 @@ matrix colnames q4_logit_sum = Min P25 Median P75 Max
 matrix list q4_logit_sum
 
 * save
-esttab matrix(q4_logit_sum) using "q4_logit_ps_summary.tex", replace tex ///
-    title("Question 4(a)(1): Logistic propensity score summary") ///
+esttab matrix(q4_logit_sum) using "ps1_output/q4_logit_ps_summary.tex", replace tex ///
+    title("Logistic propensity score summary") ///
     cells("result(fmt(4))") nomtitles
 
 * Overlap plot
@@ -594,7 +594,7 @@ twoway ///
     xtitle("Estimated propensity score - logistic") ///
     ytitle("Share") ///
     title("Overlap plot: logistic propensity score")
-graph export "q4_overlap_logit.png", replace
+graph export "ps1_output/q4_overlap_logit.png", replace
 
 
 /* (a)(2) Propensity score via random forest classifier: Estimate \hat e RF(X) via a random forest (there are several specificities regarding random forests that we will not discuss in this exercise. For our scope, use the probability forest command from grf if using R or the h2oml rfbinclass command in Stata). Report the same summaries and overlap plot.        */
@@ -648,7 +648,7 @@ matrix colnames q4_rf_sum = Min P25 Median P75 Max
 matrix list q4_rf_sum
 
 * save
-esttab matrix(q4_rf_sum) using "q4_rf_ps_summary.tex", replace tex ///
+esttab matrix(q4_rf_sum) using "ps1_output/q4_rf_ps_summary.tex", replace tex ///
     title("Question 4(a)(2): Random forest propensity score summary") ///
     cells("result(fmt(4))") nomtitles
 
@@ -666,7 +666,7 @@ twoway ///
     xtitle("Estimated propensity score - random forest") ///
     ytitle("Share") ///
     title("Overlap plot: random forest propensity score")
-graph export "q4_overlap_rf.png", replace
+graph export "ps1_output/q4_overlap_rf.png", replace
 
 
 /* (a)(3) ATT-style trimming rule: keep if pscore <= 0.8: Following a similar strategy to the one used by Imbens and Xu (2025), apply the following ATT-style trimming rule separately for each estimator: keep unit i if pscore (i) <= 0.8. For each estimator, report: (i) the implied cutoff, (ii) the number
@@ -732,8 +732,8 @@ matrix colnames q4_trim_chars = ///
 matrix list q4_trim_chars
 
 * save
-esttab matrix(q4_trim_chars) using "q4_trimmed_treated_characterization.tex", replace tex ///
-    title("Question 4(a)(3): Kept vs. trimmed treated units") ///
+esttab matrix(q4_trim_chars) using "ps1_output/q4_trimmed_treated_characterization.tex", replace tex ///
+    title("Kept vs. trimmed treated units") ///
     cells("result(fmt(3))") nomtitles
 
 * store a compact trimming summary
@@ -750,9 +750,57 @@ matrix rownames q4_trim_summary = Logistic RF
 matrix colnames q4_trim_summary = MaxControlPS NumTreatedTrimmed FracTreatedTrimmed
 matrix list q4_trim_summary
 
-esttab matrix(q4_trim_summary) using "q4_trimming_summary.tex", replace tex ///
-    title("Question 4(a)(3): Trimming summary") ///
+esttab matrix(q4_trim_summary) using "ps1_output/q4_trimming_summary.tex", replace tex ///
+    title("Trimming summary") ///
     cells("result(fmt(4))") nomtitles
+	
+/* (a)(4) Now output TABLE_3 comparing results of the full sample and the trimmed
+samples based on both propensity score measures. Do this both for the actual
+dependent variable re78 and the placebo regressions for variable re75. Always
+include the covariate set X as controls. */
+
+/* Regression of re78 using full sample and controls */
+regress re78 train age educ black hisp re74, vce(robust)
+outreg2 using "ps1_output/table_3.tex", replace se bdec(3) sdec(3) ctitle("re78 full")
+
+/* Regression of re78 using trimmed sample based on logistic regres
+sion and controls. */
+regress re78 train age educ black hisp re74 if keep_logit == 1, vce(robust)
+outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 logit trim")
+
+/* Regression of re78 using trimmed sample based on random forest
+and controls. */
+regress re78 train age educ black hisp re74 if keep_rf == 1, vce(robust)
+outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 RF trim")
+
+/* Regression of re75 using full sample and controls. */
+regress re75 train age educ black hisp re74, vce(robust)
+outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 full")
+
+/* Regression of re75 using trimmed sample based on logistic regres
+sion and controls. */
+regress re75 train age educ black hisp re74 if keep_logit == 1, vce(robust)
+outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 logit trim")
+
+/* Regression of re75 using trimmed sample based on random forest
+and controls. */
+regress re75 train age educ black hisp re74 if keep_rf == 1, vce(robust)
+outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 RF trim")
+
+
+/* (5)  Compare the two propensity-score estimators in this application. Your dis
+cussion must address: (i) flexibility (nonlinearities/interactions), (ii) tail behavior/calibration and its consequences for trimming, (iii) interpretability and reproducibility, and (iv) how the choice of estimator affects overlap diagnostics and the set of observations discarded. */
+
+/* A: In terms of flexibility, the two propensity-score estimators – the logit model and the random forest – are rather different. The former requires the researcher to impose a linear specification, where any eventual non-linearities or interactions must be modelled explicitly, requiring additional assumptions regarding the relationship between the regressors and the treatment reception. The latter, on the other hand, is a non-parametric method that automatically captures any non-linearities and interactions between the variables. This makes it more flexible and possibly more accurate, if the assignment mechanism is suspected not to be linear in parameters. 
+
+When it comes to the trimming, the graph and the summary statistics regarding the propensity score suggest a greater overlap between the treatment and the control with the logit model with respect to the random forest. This has of course an effect on the trimming and the resulting sample size: while with the first method only 39 observations are excluded, with the second the number of exclusions increases to 120, with possible consequences on the statistical power of the analysis.
+
+Both methods can be considered to be replicable: the logit model can be easily reproduced using the full model specification, while the specification of a random seed for the random forest ensures replicability despite the randomness that characterises this methodology by construction. Nonetheless, the logit model remains more interpretable, since the coefficients have a clear meaning and show explicitly how each of the regressors affects the treatment assignment. On the other hand, the random forest remains a "black box", where the exact way in which every covariate affects the assignment is not specified.
+
+Overall, the differences in the outcomes of the regressions (and therefore the differences in the trimming) are caused by the different way in which the models capture the relationship between the treatment assignment and the variables affecting it. When non-linear relationships and interactions are automatically taken into account (i.e. with the random forest) the effect of the treatment becomes much larger in magnitude, even in the placebo test. This may be influenced by the fact that, with this method, the propensity score for both groups is more polarised, and therefore the subset may include comparatively more treated individuals whose probability of receiving the treatment was lower. If the treatment is more effective for individuals "at the margin", this could have inflated the coefficients in both specifications, and therefore led to the observed difference in estimates.
+
+
+*/
 	
 *=============================================================================
 /* 								Question 5 									*/
