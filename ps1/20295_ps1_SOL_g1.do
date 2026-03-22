@@ -15,7 +15,7 @@ set more off
 
 /* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
 
-
+/*
 ssc install outreg2, replace
 ssc install ivreg2, replace
 ssc install estout, replace
@@ -27,20 +27,25 @@ ssc install ranktest, replace
 ssc install balancetable, replace
 ssc install randtreat, replace
 ssc install rforest, replace
-
+*/
 
 /* For graphs & stuff */
-
+/*
 ssc install grstyle, replace
 ssc install coefplot, replace
 graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
-
+*/
 local user = c(username)
 
 if ("`user'" == "erick") {
     global filepath "/home/erick/TEMP/"
+}
+
+if ("`user'" == "Sara") {
+    global filepath "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1"
+	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1\ps1_output"
 }
 
 if ("`user'" == "flore") {
@@ -61,7 +66,7 @@ if ("`user'" == "gabrielemole") {
 /* Use the file jtrain2 													*/
 *=============================================================================
 
-use "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\jtrain2.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/raw/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Construct a table checking for balance across treatment and control for the following covariates: age educ black hisp nodegree re74 re75.
 Name it TABLE_1.
@@ -529,7 +534,7 @@ regress re78 train age_34 age_46
 answer the questions below. */
 *=============================================================================
 
-use "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\jtrain3.dta", clear
+use"https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps1/ps1_data/jtrain3.dta", clear
 
 * init covariates
 local X "age educ black hisp re74"
