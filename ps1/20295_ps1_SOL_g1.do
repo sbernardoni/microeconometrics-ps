@@ -58,7 +58,7 @@ if ("`user'" == "gabrielemole") {
 /* Use the file jtrain2 													*/
 *=============================================================================
 
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Construct a table checking for balance across treatment and control for the following covariates: age educ black hisp nodegree re74 re75.
 Name it TABLE 1.
@@ -211,7 +211,7 @@ esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
 
 * SBLOCCA STO COSO PER AVERE ACCESSO ALL'ALTRO DATASET | NON USARLI ENTRAMBI, QUESTO CANCELLA IL DATASET PRECEDENTE *
 
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain3.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain3.dta", clear
 
 /* (a) Do a table with the same structure of TABLE 1 of item (a) in question 1 for the following covariates: age educ black hisp re74 re75 (note that nodegree is not present in the current dataset.) Add the corresponding columns to TABLE 1. */
 
@@ -437,7 +437,7 @@ addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 You may use the lassopack package in Stata or the hdm package in R to perform your analysis. To answer the questions below, read Belloni et al. (2014) to understand the "double selection" procedure and check the help files of the commands above in the language you chose. */
 *=============================================================================
 
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Revisit your analysis of the data set jtrain2 in exercise 1 as a post-Lasso OLS estimation. */
 
@@ -530,6 +530,10 @@ regress re78 train age_34 age_46
 
 			Nonetheless, while the balance in observed characteristics is reassuring, it is still crucial to acknowledge that this balance does not rule out the possibility of imbalance in unobserved factors. However, based on the data-driven selection process, the evidence points to a strong level of balance between the groups on the characteristics we can measure, thereby supporting the credibility of the estimated treatment effect. */
 
+
+
+
+
 *=============================================================================
 /* 								Question 4 									*/
 /* Use the jtrain2 data set.
@@ -546,7 +550,7 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 
 * (b) 
 
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 *calculating the simple difference in means
 *seed set at 20295 to mantain coherence
@@ -611,3 +615,4 @@ bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 		
 		Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. */
 	
+
