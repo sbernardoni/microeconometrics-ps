@@ -141,15 +141,15 @@ count if e(sample) & train==1
 scalar treated1 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using table_2.tex, replace se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", replace se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_3")
 
 	/* Comment: The regression of re78 on train yields an average treatment effect of 1.79 (in units: 1800USD per year) with a standard error of 0.63. When introducing additional covariates, first age, educ, black, and hisp in regression 2 and eventually re74 and re75 in regression 3, the estimated coefficient for train slightly decreases to around 1.69 and 1.68, respectively, while the standard errors remain essentially the same. As neither estimated average effects nor standard errors change substantially, the treatment effect is fairly robust to adding covariates. Omitted variable bias therefore does not seem to be a major limitation to our model, in the sense that the covariates we controlled for do not do not substantially confound the estimation of the relationship between treatment and outcome. */
@@ -189,7 +189,7 @@ preserve
 	estimates store trim10
 restore
 
-esttab trim3 trim5 trim10 using "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\outputs\table3_tex", replace tex ///
+esttab trim3 trim5 trim10 using "ps1_output/reg_no_influence.tex", replace tex ///
     title("Regression Results After Removing Extreme Influence Observations") ///
     stats(N, fmt(%9.0g) label("N")) ///
 	nomtitles 
@@ -262,7 +262,7 @@ matrix colnames table_1a_2a = TreatedMean_treat_1a ControlMean_treat_1a TreatedS
 
 matrix list table_1a_2a
 
-esttab matrix(table_1a_2a) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a) using "ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -347,7 +347,7 @@ matrix list table_2d
 	
 matrix table_1a_2a_2d = table_1a_2a, table_2d
 
-esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a_2d) using "ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -371,15 +371,15 @@ count if e(sample) & train==1
 scalar treated2 = r(N)
 
 regress re78 treated, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_1")
 
 regress re78 treated age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_2")
 
 regress re78 treated age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_3")
 
 
@@ -407,15 +407,15 @@ count if e(sample) & train==1
 scalar treated3 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 
 		
