@@ -1,5 +1,4 @@
 *============================================================================
-/* Group number: 1 */
 /* Group composition: Sara Bernardoni, Gabriele Molè, Florens Schlosser */
 *============================================================================
 
@@ -26,7 +25,8 @@ ssc install pdslasso, replace
 ssc install ranktest, replace
 ssc install balancetable, replace
 ssc install randtreat, replace
- */
+ssc install rforest, replace
+*/
 
 /* For graphs & stuff */
 /*
@@ -47,6 +47,14 @@ if ("`user'" == "Sara") {
 	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1\ps1_output"
 }
 
+if ("`user'" == "flore") {
+    global filepath 
+"C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files"
+	global output 
+"\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\outputs"
+}
+
+
 if ("`user'" == "gabrielemole") {
     global filepath ""C:\Users\Stealth\Desktop\microeconometrics-ps\ps1""
 	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1\ps1_output"
@@ -60,7 +68,7 @@ if ("`user'" == "gabrielemole") {
 use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Construct a table checking for balance across treatment and control for the following covariates: age educ black hisp nodegree re74 re75.
-Name it TABLE 1.
+Name it TABLE_1.
 Present for each variable: mean for treated, mean for controls, standard deviations for treated, standard deviations for control, difference in means between treatment and control, appropriate standard errors for difference in means.
 Comment on how many variables are balanced or not. Is it what you expected? */
 
@@ -94,20 +102,17 @@ matrix rownames table_1a = age educ black hisp nodegree re74 re75
 
 matrix list table_1a
 
-esttab matrix(table_1a) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a) using "$output/table_1.tex", replace ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
 	
-	/* A: The results indicate that, overall, most of the covariates are balanced between the treatment and control groups, but there are a couple of exceptions that merit further discussion.
-
-    For five out of the seven variables—age, education (educ), the variable measuring past earnings (re74 and re75), and the indicator for being black—the differences in means are small and not statistically significant. This suggests that randomization (or the design of the study) has largely succeeded in equating the two groups on these characteristics. This outcome is what one would typically expect in a well-conducted randomized experiment, where random assignment should, in theory, yield balance across observed characteristics.
-
-    However, the variables "nodegree" and, to a lesser extent, "hisp" show discrepancies. The "nodegree" variable has a statistically significant difference between the groups, meaning that the proportion of individuals without a degree is noticeably different in the treatment group compared to the control group. The "hisp" variable shows a borderline significant difference; while not as pronounced as "nodegree," it still hints at some imbalance that might be of concern.
-
-    In summary, while the majority of the covariates (five out of seven) are balanced, the imbalance in "nodegree" and the marginal case of "hisp" indicate that there might be systematic differences that could affect the outcome if these variables are correlated with the treatment effect. This is a common issue in finite samples and may require further adjustment—such as including these covariates in the regression—to ensure that the estimates of the treatment effect are not biased. Overall, the results are mostly in line with expectations for a randomized study, with the caveat that the imbalances observed in "nodegree" (and possibly "hisp") should be addressed in subsequent analyses. 
+	/* Comment: Overall, we observe that most of the 7 covariates are balanced between treatment and control groups.
 	
-	This is nonetheless understandable, as we are dealing with a subsample of the original experimental data. */
+In particular, 5 of the variables (age, education, past earnings (re74 and re75), and the indicator for being black) do not have significant differences in means between treatment and control group. By contrast, the proportion of individuals without a degree (variable "nodegree") differs significantly between treatment group and control group, as does, to a lesser extent (10% confidence), the "hisp" variable.
+
+From a well-implemented experimental design, we would expect no noteworthy imbalances in the distribution of major covariates between treatment and control group. This is due to the random nature of treatment assignment in experimental designs. While we do observe balance between the two groups for 5 out of 7 covariates, the remaining imbalances in the "nodegree" and "hisp" variables raise concerns about systematic differences in covariates that might be correlated with treatment effects. While this is not an atypical observation in finite samples, we do have to consider adjusting our sample further to avoid biased estimates. For example, we could control for the concerned covariates in the regression. Furthermore, our observations do not limit the credibility of the original experimental design, as we are dealing with only a subsample of the original sample.
+ */
 
 /* (b) Regress re78 on train.
 Save the estimate and the standard error of the coefficient on train as scalars.
@@ -118,15 +123,14 @@ regress re78 train, vce(robust)
 scalar coef1 = _b[train]
 scalar se1 = _se[train]
 
-	/* A: By running a regression of the real earnings in 1978 on training (which represents our treatment variable), we obtain a positive coefficient of 1.794343 significant at the 5% level; this implies that real earnings, in our experiment, were positive correlated with the training programme.
-	
-	We ought to keep in mind that, despite the coefficient being statistically significant and different from zero, the R^2 of our model (0.0178) suggests that there are other factors responsible for the vast portion of the variation of real earnings in 1978 */
+	/* Comment: The coefficient resulting from regressing real earning in 1978 on the treatment dummy is significantly positive (at 5% confidence) with a value of 1.794343; this implies that real earnings, in our experiment, were positively correlated with the training programme. Nevertheless, the rather low R^2 of 1.78% indicates that other factors than treatment were responsible for the vast portion of the variation in real earnings.*/
 
 /* (c) Construct a table by sequentially adding the output of the following regressions to each column:
 (1) re78 on train;
 (2) re78 on train age educ black hisp;
 (3) re78 on train age educ black hisp re74 re75;
-Add rows to the table with the number of controls and treated in each regression. Name it TABLE 2. */
+Add rows to the table with the number of controls and treated in each regression. Name it TABLE 2. 
+Are your results sensitive to the introduction of covariates?*/
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
 
@@ -136,25 +140,18 @@ count if e(sample) & train==1
 scalar treated1 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using table_2.tex, replace se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", replace se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_3")
 
-	
-/* Are your results sensitive to the introduction of covariates? */
-
-	/* A: In the simplest model (Regression 1), where re78 is regressed solely on the treatment variable train, the estimated coefficient for train is approximately 1.79 with a standard error of 0.63; this entails that on average, the treatment effect was equal to approximately 1800USD per year. When we sequentially introduced additional covariates in Regression 2 (adding age, educ, black, and hisp) and then in Regression 3 (further adding re74 and re75), the estimated coefficient for train slightly decreases to around 1.69 and 1.68, respectively, while the standard errors remain nearly identical.
-
-    These minimal changes in both the point estimates and standard errors suggest that the treatment effect is robust to the inclusion of additional covariates. In other words, the introduction of controls does not significantly alter the estimated effect of the training program on re78. This implies that omitted variable bias is likely not a major concern in this context, as the observable characteristics we controlled for do not substantially confound the relationship between the treatment and the outcome.
-
-    Overall, our results indicate that the impact of the training program is not sensitive to the introduction of covariates, which reinforces the credibility of our baseline findings. */
+	/* Comment: The regression of re78 on train yields an average treatment effect of 1.79 (in units: 1800USD per year) with a standard error of 0.63. When introducing additional covariates, first age, educ, black, and hisp in regression 2 and eventually re74 and re75 in regression 3, the estimated coefficient for train slightly decreases to around 1.69 and 1.68, respectively, while the standard errors remain essentially the same. As neither estimated average effects nor standard errors change substantially, the treatment effect is fairly robust to adding covariates. Omitted variable bias therefore does not seem to be a major limitation to our model, in the sense that the covariates we controlled for do not do not substantially confound the estimation of the relationship between treatment and outcome. */
 
 /* (d) dfbeta is a statistic that measures how much the regression coefficient of a certain variable changes in standard deviations if the i-th observation is deleted.
 If using Stata, type help dfbeta and discover how to estimate this statistic after a regression.
@@ -191,17 +188,17 @@ preserve
 	estimates store trim10
 restore
 
-* Questa just in case ci fossimo persi qualcosa, secondo me ha senso ma non è richiesta #SG *
-
-esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
+esttab trim3 trim5 trim10 using "$output/reg_no_influence.tex", replace tex ///
     title("Regression Results After Removing Extreme Influence Observations") ///
     stats(N, fmt(%9.0g) label("N")) ///
 	nomtitles 
 	
 	
-		/* A: When we look at the results of the regression after trimming the most influential observations, we notice some changes in the estimated effect of the treatment variable ("train") on re78. In the full sample, the estimated coefficient for train is about 1.68 and statistically significant (p = 0.008). After removing the 3 most extreme observations from each tail of the dfbeta distribution, the coefficient drops to about 1.36 (p = 0.009). As we trim more observations—first 5 from each tail (reducing the coefficient to about 1.22 with p = 0.015) and then 10 from each tail (bringing it down to around 1.02 with p = 0.029)—the estimated effect continues to decrease in magnitude, though it remains statistically significant in all cases.
-
-		This pattern suggests that a few observations with large influence were pulling the original estimate upward. Although the treatment effect remains positive and statistically significant after trimming, the fact that its magnitude changes appreciably indicates that the results are somewhat sensitive to influential observations. In other words, while the overall conclusion (that the training program has a positive effect on re78) holds even when these outliers are removed, the precise size of the effect is affected by a small number of influential cases. */
+/* Comment: The full-sample baseline effect of treatment on re78 is about 1.68 and statistically significant (p = 0.008). After removing the 3 most extreme observations from each sample tail, the coefficient drops to about 1.36 (p = 0.009).
+After removing the 5 most extreme observations from each sample tail, the coefficient drops further to 1.22 (p = 0.015). 
+After removing the 10 most extreme observations from each sample tail, the coefficient equals 1.02 (p = 0.029). 
+Hence, we do observe a decrease in the estimated magnitude of the effect of treatment upon removal of extreme values. Nevertheless, significance and direction (i.e., positivity) of the effect do not hinge on limit observations. 
+Thus, why we can indeed rely on effectiveness of the treatment (in the sense of a significant effect in the desired direction), we do have to keep in mind that the size of the effect was quite considerably influenced by a few extreme cases.*/
 
 *=============================================================================
 /* 								Question 2 									*/
@@ -262,7 +259,7 @@ matrix colnames table_1a_2a = TreatedMean_treat_1a ControlMean_treat_1a TreatedS
 
 matrix list table_1a_2a
 
-esttab matrix(table_1a_2a) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a) using "$output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -347,7 +344,7 @@ matrix list table_2d
 	
 matrix table_1a_2a_2d = table_1a_2a, table_2d
 
-esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a_2d) using "$output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -371,15 +368,15 @@ count if e(sample) & train==1
 scalar treated2 = r(N)
 
 regress re78 treated, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_1")
 
 regress re78 treated age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_2")
 
 regress re78 treated age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_3")
 
 
@@ -407,15 +404,15 @@ count if e(sample) & train==1
 scalar treated3 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 
 		
@@ -531,6 +528,274 @@ regress re78 train age_34 age_46
 answer the questions below. */
 *=============================================================================
 
+use"https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps1/ps1_data/jtrain3.dta", clear
+
+* init covariates
+local X "age educ black hisp re74"
+
+* Create an id for merges after H2O predictions
+capture drop id_q4
+gen id_q4 = _n
+
+
+/* (a) Follow the approach from Imbens and Xu (2025) and estimate the ATT for the
+training program based on jtrain3. For this, estimate propensity scores using
+(i) logistic regression and (ii) a random forest classifier. Use the same covariate set X in both models: X = {age educ black hisp re74}                             */
+
+/* (a)(1) Propensity score via logistic regression: Estimate \hat e logit(X) via logistic regression. Report summary statistics of \hat e logit separately for treated and controls (min/25%/median/75%/max), and produce an overlap plot (treated vs. control).*/
+
+* logit regress train on covariates
+logit train `X', vce(robust)
+* extract \hat e
+predict double pscore_logit, pr
+
+* Summary statistics for pscore_logit by treatment status
+matrix q4_logit_sum = J(2,5,.)
+quietly summarize pscore_logit if train==1, detail
+matrix q4_logit_sum[1,1] = r(min)
+matrix q4_logit_sum[1,2] = r(p25)
+matrix q4_logit_sum[1,3] = r(p50)
+matrix q4_logit_sum[1,4] = r(p75)
+matrix q4_logit_sum[1,5] = r(max)
+
+quietly summarize pscore_logit if train==0, detail
+matrix q4_logit_sum[2,1] = r(min)
+matrix q4_logit_sum[2,2] = r(p25)
+matrix q4_logit_sum[2,3] = r(p50)
+matrix q4_logit_sum[2,4] = r(p75)
+matrix q4_logit_sum[2,5] = r(max)
+
+matrix rownames q4_logit_sum = Treated Controls
+matrix colnames q4_logit_sum = Min P25 Median P75 Max
+matrix list q4_logit_sum
+
+* save
+esttab matrix(q4_logit_sum) using "$output/q4_logit_ps_summary.tex", replace tex ///
+    title("Logistic propensity score summary") ///
+    cells("result(fmt(4))") nomtitles
+
+* Overlap plot
+twoway ///
+    (histogram pscore_logit if train==1 & !missing(pscore_logit), ///
+        fraction start(0) width(0.05) ///
+        color(navy%40) lcolor(navy) ///
+        legend(label(1 "Treated"))) ///
+    (histogram pscore_logit if train==0 & !missing(pscore_logit), ///
+        fraction start(0) width(0.05) ///
+        color(maroon%40) lcolor(maroon) ///
+        legend(label(2 "Controls"))), ///
+    legend(order(1 "Treated" 2 "Controls")) ///
+    xtitle("Estimated propensity score - logistic") ///
+    ytitle("Share") ///
+    title("Overlap plot: logistic propensity score")
+graph export "ps1_output/q4_overlap_logit.png", replace
+
+
+/* (a)(2) Propensity score via random forest classifier: Estimate \hat e RF(X) via a random forest (there are several specificities regarding random forests that we will not discuss in this exercise. For our scope, use the probability forest command from grf if using R or the h2oml rfbinclass command in Stata). Report the same summaries and overlap plot.        */
+
+* The code below uses h2o. Please make sure that you have downloaded the h2o.jar file and placed it into an ado folder.
+
+tempfile jtrain3_base rf_preds
+save `jtrain3_base', replace
+
+* initialise h2o procedure
+capture noisily h2o init
+
+_h2oframe put, into(h2o_jtrain3)
+_h2oframe change h2o_jtrain3
+_h2oframe factor train, replace
+
+* Important: the second predicted probability corresponds to Pr(train==1) which we want
+h2oml rfbinclass train `X', h2orseed(20295) ntrees(500)
+h2omlpredict rf_pr0 rf_pr1, pr
+
+* bring h2o frame back to Stata
+clear
+_h2oframe get h2o_jtrain3
+keep id_q4 rf_pr0 rf_pr1
+rename rf_pr1 pscore_rf
+save `rf_preds', replace
+
+use `jtrain3_base', clear
+merge 1:1 id_q4 using `rf_preds', nogen
+
+capture noisily h2o shutdown, force
+
+* Summary statistics for pscore_rf by treatment status
+matrix q4_rf_sum = J(2,5,.)
+quietly summarize pscore_rf if train==1, detail
+matrix q4_rf_sum[1,1] = r(min)
+matrix q4_rf_sum[1,2] = r(p25)
+matrix q4_rf_sum[1,3] = r(p50)
+matrix q4_rf_sum[1,4] = r(p75)
+matrix q4_rf_sum[1,5] = r(max)
+
+quietly summarize pscore_rf if train==0, detail
+matrix q4_rf_sum[2,1] = r(min)
+matrix q4_rf_sum[2,2] = r(p25)
+matrix q4_rf_sum[2,3] = r(p50)
+matrix q4_rf_sum[2,4] = r(p75)
+matrix q4_rf_sum[2,5] = r(max)
+
+matrix rownames q4_rf_sum = Treated Controls
+matrix colnames q4_rf_sum = Min P25 Median P75 Max
+matrix list q4_rf_sum
+
+* save
+esttab matrix(q4_rf_sum) using "$output/q4_rf_ps_summary.tex", replace tex ///
+    title("Question 4(a)(2): Random forest propensity score summary") ///
+    cells("result(fmt(4))") nomtitles
+
+* Overlap plot: random forest propensity score
+twoway ///
+    (histogram pscore_rf if train==1 & !missing(pscore_rf), ///
+        fraction start(0) width(0.05) ///
+        color(navy%40) lcolor(navy) ///
+        legend(label(1 "Treated"))) ///
+    (histogram pscore_rf if train==0 & !missing(pscore_rf), ///
+        fraction start(0) width(0.05) ///
+        color(maroon%40) lcolor(maroon) ///
+        legend(label(2 "Controls"))), ///
+    legend(order(1 "Treated" 2 "Controls")) ///
+    xtitle("Estimated propensity score - random forest") ///
+    ytitle("Share") ///
+    title("Overlap plot: random forest propensity score")
+graph export "ps1_output/q4_overlap_rf.png", replace
+
+
+/* (a)(3) ATT-style trimming rule: keep if pscore <= 0.8: Following a similar strategy to the one used by Imbens and Xu (2025), apply the following ATT-style trimming rule separately for each estimator: keep unit i if pscore (i) <= 0.8. For each estimator, report: (i) the implied cutoff, (ii) the number
+and fraction of treated units trimmed, and (iii) a brief characterization of which
+treated units are trimmed (compare covariate means for trimmed vs. kept treated,
+or provide a short table). */
+
+* init binary vectors for kept individuals
+capture drop keep_logit keep_rf trimmed_logit trimmed_rf
+gen byte keep_logit = (pscore_logit <= 0.8)
+gen byte keep_rf    = (pscore_rf    <= 0.8)
+
+* init binary vectors for trimmed treated individuals 
+gen byte trimmed_logit = (train==1 & keep_logit==0)
+gen byte trimmed_rf    = (train==1 & keep_rf==0)
+
+* Implied cutoff max_{W=0} \hat e(X): extract max propensity score of controls
+quietly summarize pscore_logit if train==0, detail
+scalar cutoff_logit_controls = r(max)
+
+quietly summarize pscore_rf if train==0, detail
+scalar cutoff_rf_controls = r(max)
+
+display "Implied control cutoff, logistic = " cutoff_logit_controls
+display "Implied control cutoff, RF       = " cutoff_rf_controls
+
+* Number and fraction of treated units trimmed
+quietly count if train==1
+scalar Ntreat_total = r(N)
+
+quietly count if trimmed_logit==1
+scalar Ntreat_trim_logit = r(N)
+scalar Frac_trim_logit = Ntreat_trim_logit / Ntreat_total
+
+quietly count if trimmed_rf==1
+scalar Ntreat_trim_rf = r(N)
+scalar Frac_trim_rf = Ntreat_trim_rf / Ntreat_total
+
+display "Treated trimmed (logit): " Ntreat_trim_logit " out of " Ntreat_total " = " Frac_trim_logit
+display "Treated trimmed (RF):    " Ntreat_trim_rf " out of " Ntreat_total " = " Frac_trim_rf
+
+* compare covariate means for trimmed vs kept treated
+matrix q4_trim_chars = J(5,4,.)
+local row = 1
+foreach var of local X {
+    quietly summarize `var' if train==1 & keep_logit==1, meanonly
+    matrix q4_trim_chars[`row',1] = r(mean)
+    quietly summarize `var' if trimmed_logit==1, meanonly
+    matrix q4_trim_chars[`row',2] = r(mean)
+
+    quietly summarize `var' if train==1 & keep_rf==1, meanonly
+    matrix q4_trim_chars[`row',3] = r(mean)
+    quietly summarize `var' if trimmed_rf==1, meanonly
+    matrix q4_trim_chars[`row',4] = r(mean)
+
+    local row = `row' + 1
+}
+
+matrix rownames q4_trim_chars = age educ black hisp re74
+matrix colnames q4_trim_chars = ///
+    KeptTreated_logit TrimmedTreated_logit ///
+    KeptTreated_rf TrimmedTreated_rf
+matrix list q4_trim_chars
+
+* save
+esttab matrix(q4_trim_chars) using "$output/q4_trimmed_treated_characterization.tex", replace tex ///
+    title("Kept vs. trimmed treated units") ///
+    cells("result(fmt(3))") nomtitles
+
+* store a compact trimming summary
+matrix q4_trim_summary = J(2,3,.)
+matrix q4_trim_summary[1,1] = cutoff_logit_controls
+matrix q4_trim_summary[1,2] = Ntreat_trim_logit
+matrix q4_trim_summary[1,3] = Frac_trim_logit
+
+matrix q4_trim_summary[2,1] = cutoff_rf_controls
+matrix q4_trim_summary[2,2] = Ntreat_trim_rf
+matrix q4_trim_summary[2,3] = Frac_trim_rf
+
+matrix rownames q4_trim_summary = Logistic RF
+matrix colnames q4_trim_summary = MaxControlPS NumTreatedTrimmed FracTreatedTrimmed
+matrix list q4_trim_summary
+
+esttab matrix(q4_trim_summary) using "$output/q4_trimming_summary.tex", replace tex ///
+    title("Trimming summary") ///
+    cells("result(fmt(4))") nomtitles
+	
+/* (a)(4) Now output TABLE_3 comparing results of the full sample and the trimmed
+samples based on both propensity score measures. Do this both for the actual
+dependent variable re78 and the placebo regressions for variable re75. Always
+include the covariate set X as controls. */
+
+/* Regression of re78 using full sample and controls */
+regress re78 train age educ black hisp re74, vce(robust)
+outreg2 using "$output/table_3.tex", replace se bdec(3) sdec(3) ctitle("re78 full")
+
+/* Regression of re78 using trimmed sample based on logistic regres
+sion and controls. */
+regress re78 train age educ black hisp re74 if keep_logit == 1, vce(robust)
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 logit trim")
+
+/* Regression of re78 using trimmed sample based on random forest
+and controls. */
+regress re78 train age educ black hisp re74 if keep_rf == 1, vce(robust)
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 RF trim")
+
+/* Regression of re75 using full sample and controls. */
+regress re75 train age educ black hisp re74, vce(robust)
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 full")
+
+/* Regression of re75 using trimmed sample based on logistic regres
+sion and controls. */
+regress re75 train age educ black hisp re74 if keep_logit == 1, vce(robust)
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 logit trim")
+
+/* Regression of re75 using trimmed sample based on random forest
+and controls. */
+regress re75 train age educ black hisp re74 if keep_rf == 1, vce(robust)
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 RF trim")
+
+
+/* (5)  Compare the two propensity-score estimators in this application. Your discussion must address: (i) flexibility (nonlinearities/interactions), (ii) tail behavior/calibration and its consequences for trimming, (iii) interpretability and reproducibility, and (iv) how the choice of estimator affects overlap diagnostics and the set of observations discarded. */
+
+/* A: In terms of flexibility, the two propensity-score estimators – the logit model and the random forest – are rather different. The former requires the researcher to impose a linear specification, where any eventual non-linearities or interactions must be modelled explicitly, requiring additional assumptions regarding the relationship between the regressors and the treatment reception. The latter, on the other hand, is a non-parametric method that automatically captures any non-linearities and interactions between the variables. This makes it more flexible and possibly more accurate, if the assignment mechanism is suspected not to be linear in parameters. 
+
+When it comes to the trimming, the graph and the summary statistics regarding the propensity score suggest a greater overlap between the treatment and the control with the logit model with respect to the random forest. This has of course an effect on the trimming and the resulting sample size: while with the first method only 39 observations are excluded, with the second the number of exclusions increases to 120. For the estimation at the tails of the distribution, the logit model may have a better performance at the tails, as it is based on a sigmoidal curve, hence forcing observations into having a smoother density. This is indeed confirmed by our estimation, as observations assigned to the extremes of the distribution of the propensity score are relatively less when compared to the random forest, which does not have a predetermined functional form. On the other hand, the calibration refers to the percentage of individuals that actually receive the treatment, which may be different from the estimated propensity score given their covariates. As the evaluation of the calibration is highly sensitive to the data at hand, without further testing we do not have a strong preference for either method.
+
+Both methods can be considered to be replicable: the logit model can be easily reproduced using the full model specification, while the specification of a random seed for the random forest ensures replicability despite the randomness that characterises this methodology by construction. Nonetheless, the logit model remains more interpretable, since the coefficients have a clear meaning and show explicitly how each of the regressors affects the treatment assignment. On the other hand, the random forest remains a "black box", where the exact way in which every covariate affects the assignment is not specified.
+
+Overall, the differences in the outcomes of the regressions (and therefore the differences in the trimming) are caused by the different way in which the models capture the relationship between the treatment assignment and the variables affecting it. When non-linear relationships and interactions are automatically taken into account (i.e. with the random forest) the effect of the treatment becomes much larger in magnitude, even in the placebo test. This may be influenced by the fact that, with this method, the propensity score for both groups is more polarised, and therefore the subset may include comparatively more treated individuals whose probability of receiving the treatment was lower. If the treatment is more effective for individuals "at the margin", this could have inflated the coefficients in both specifications, and therefore led to the observed difference in estimates.
+
+In addition, the fact that the coefficient of train is significant even in the placebo test suggests that the estimate of the treatment effect may be biased by the self-selection of subjects into the treatment or control group, implying that the identification strategy is not appropriate. The larger magnitude of the coefficient using the random forest may be due to existence of a non-linear relationship between the covariates and being in the treatment group, which may be driving the self-selection process.
+
+*/
+	
 
 
 /* (b) The results from (Dehejia and Wahba, 1999) showed that observational methods could replicate the experimental results in LaLonde (1986)’s setting. Discuss the implications of the points discussed by Imbens and Xu (2025) on this debate. Can we interpret the results from Dehejia and Wahba (1999) as causal? How do you connect your results in point (a) to this discussion? */
