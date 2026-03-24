@@ -48,8 +48,8 @@ if ("`user'" == "Sara") {
 }
 
 if ("`user'" == "gabrielemole") {
-    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
+    global filepath ""C:\Users\Stealth\Desktop\microeconometrics-ps\ps1""
+	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1\ps1_output"
 }
 
 *=============================================================================
@@ -208,8 +208,6 @@ esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
 /* Use the jtrain3 															*/
 *=============================================================================
 
-* SBLOCCA STO COSO PER AVERE ACCESSO ALL'ALTRO DATASET | NON USARLI ENTRAMBI, QUESTO CANCELLA IL DATASET PRECEDENTE *
-
 use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain3.dta", clear
 
 /* (a) Do a table with the same structure of TABLE 1 of item (a) in question 1 for the following covariates: age educ black hisp re74 re75 (note that nodegree is not present in the current dataset.) Add the corresponding columns to TABLE 1. */
@@ -289,7 +287,7 @@ randtreat, generate(treated_2) setseed(20295) misfits(strata) // check this out 
 	
 pwcorr treated treated_2, sig
 
-	/* A: The correlation is close to 0 and not statistically significant. This is consistent with random assignments with different algorithms. If an assignment is truly random it should be uncorrelated with other random assignments adopting different techniques even when using the same seed.*/
+	/* A: The correlation is virtually null and statistically not significant. This is due to different algorithms inducing a random assignment: as the assignments are both random and rely on different “randomization algorithms”, they are uncorrelated even when using the same seed. */
 
 /* (d) Do a table with the same structure of TABLE 1 of item (a) in question 1., but using treated instead of train. */ 
 
@@ -356,7 +354,7 @@ esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex //
 	
 	/* (iii) What you find corresponds to your expectations? */
 	
-		/* A: All variables are statistically balanced when using random assignment to the fake treatment. This is coherent with theoretical expectations as the treatment is randomly assigned and one should expect that almost all variables are balanced, possibly with some exceptions due to chance. As we are dealing with relatively few variables it was more likely to observe them all balanced. Experimental data gave a different picture, almost completely imbalanced, a difference that is due to the very different nature of the data. */
+		/* A: As we randomly assigned the treatment one should expect almost all variables to be balanced with minor exceptions due to chance (1/20 with 95% level confidence intervals). This is indeed what we observe: all variables are statistically balanced when using random assignment to the fake treatment. It was also more likely to observe them all balanced as we are dealing with relatively few variables. Experimental data gave a different picture, almost completely imbalanced, a difference that is due to the very different nature of the data. */
 
 /* (e)  */
 
@@ -392,7 +390,7 @@ addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_3")
 	
 	/* (iii) Comment on what you find. Is it what you expected? */
 	
-		/* A: In the first regression, the treatment dummy is slightly negative yet insignificant. After controlling for other covariates, the point estimate moves closer to 0 and remains statistically insignificant. As expected, adding covariates slightly improves standard errors for the treatment dummy. This is in line with the assignment of a random pseudo-treatment, hence yielding a null effect due to his random nature. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
+		/* A: We expect pseudo-treatment to have no effect as it is random in nature. Indeed, starting in regression 1) we find a slightly negative yet insignificant coefficient for the treatment variable. Adding covariates should improve efficiency by lowering standard errors: in regression 2) and 3) the point estimate of treatment moves closer to 0 but remains statistically insignificant and confidence intervals get progressively smaller. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
 
 /* (f) */
 
@@ -428,7 +426,8 @@ addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 	
 	/* (iii) Compare the results with the first three columns of TABLE 2.  Comment on what you find. Is it what you expected? Are your results sensitive to the introduction of covariates? */ 
 	
-		/* A: The first regression of real earnings on the training program shows a significant and strong negative effect of the training program (-15.20), differently from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. While the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2, the "treatment effect" disappears in jtrain3 after controlling for the other variables. Adding controls to jtrain3 makes the point estimate gradually drop to a slightly positive value close to 0 and lose its statistical significance, partially resembling the result in the previous subpoint. Covariates also show change in magnitude and significance after adding controls. An example is "age" that changes sign and drops in magnitude after controlling for real earnings. This difference is due to the different nature of the datasets, namely experimental and non-experimental, and as such it was in line with our expectations to find discrepancies.  */
+		/* A: As jtrain3 includes a non-experimental control, we expect to see a different behavior compared to experimental data (jtrain2) and higher sensitivity to adding covariates that might be capturing some endogenous selection. Regression 1) yields a significant and strong negative coefficient for the training program (-15.20). This is different from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. Adding covariates in jtrain3 progressively reduces the point estimate: in regression 3) the estimated coefficient for train drops closely to 0 and becomes statistically insignificant, in a quite similar fashion to the previous subpoint. Conversely, the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2. Covariates also show change in magnitude and significance after adding controls. An example is "age" that changes sign and drops in magnitude after controlling for real earnings. */
+
 
 *=============================================================================
 /* 								Question 3 									*/
@@ -530,6 +529,27 @@ regress re78 train age_34 age_46
 			Nonetheless, while the balance in observed characteristics is reassuring, it is still crucial to acknowledge that this balance does not rule out the possibility of imbalance in unobserved factors. However, based on the data-driven selection process, the evidence points to a strong level of balance between the groups on the characteristics we can measure, thereby supporting the credibility of the estimated treatment effect. */
 
 
+
+*=============================================================================
+/* 								Question 4 									*/
+/* Over time, several articles have revisited LaLonde's results and provided a rich discussion about the best practices when working with observational data. A recent article, "Comparing Experimental and Nonexperimental Methods: What Lessons Have We Learned Four Decades after LaLonde (1986)?", summarizes this debate and discusses some of the recent advances on the topic. Read Imbens and Xu (2025) and
+answer the questions below. */
+*=============================================================================
+
+
+
+/* (b) The results from (Dehejia and Wahba, 1999) showed that observational methods could replicate the experimental results in LaLonde (1986)’s setting. Discuss the implications of the points discussed by Imbens and Xu (2025) on this debate. Can we interpret the results from Dehejia and Wahba (1999) as causal? How do you connect your results in point (a) to this discussion? */
+
+
+		/* Imbens and Xu (2025) draw a crucial distinction between the *statistical estimand* and the *causal estimand*. The former is a function of observed data, and the adoption of modern methods — such as doubly robust estimators — has yielded more robust and precise estimates of it. The latter is the Average Treatment Effect on the Treated (ATT), which can only be recovered from the statistical estimand under an additional identifying assumption: unconfoundedness. Crucially, improving estimation of the statistical estimand does not guarantee convergence to the true causal effect. Whether it does depends on the plausibility of unconfoundedness, which must be assessed through diagnostic exercises such as placebo tests.
+
+Dehejia and Wahba (1999) advanced the debate by introducing propensity score stratification and matching, paired with a principled trimming strategy to improve comparability between the nonexperimental control group and the treated units. This refined LaLonde's (1986) original ad hoc subsetting approach and, as Imbens and Xu (2025) note, anticipated the now-standard practice of assessing overlap through the propensity score distribution. However, two limitations prevent interpreting their estimates as causal. First, they focus exclusively on the ATT without examining treatment effect heterogeneity, which subsequent literature has shown to be substantial. Second, and more fundamentally, they conduct no formal placebo tests, which have since become standard practice for assessing unconfoundedness.
+
+Our results in point (a) reinforce and sharpen this conclusion. Table 3 reports OLS estimates of the treatment effect on 1978 earnings (columns 1–3) and on 1975 earnings as a placebo outcome (columns 4–6), across the full sample and two trimmed samples based on logistic and random forest propensity scores. Using the experimental estimate from jtrain2 ($1,794) as the external benchmark, none of the re78 estimates are close to it: the full-sample estimate is −$929 (insignificant), the logit-trimmed estimate is −$982 (insignificant), and the random forest-trimmed estimate is −$4,518 (significant at 1%). Rather than converging toward the experimental benchmark, trimming based on the random forest propensity score worsens the estimate. This is consistent with the trimming statistics from part (a)(3), where the random forest specification discards a larger fraction of treated units than the logit, suggesting that its more aggressive trimming distorts the composition of the remaining sample in ways that amplify rather than attenuate selection bias.
+
+The placebo results are unambiguous. The estimated effect on 1975 earnings — a pre-program outcome that could not have been causally affected by training — is −$2,006 (p < 0.01) in the full sample, −$2,263 (p < 0.01) with logit trimming, and −$3,550 (p < 0.01) with random forest trimming. The fact that trimming not only fails to eliminate but amplifies the placebo effect provides clear evidence against unconfoundedness: even after restricting to the region of common support, treated and PSID control units differ systematically on unobserved dimensions correlated with earnings. Neither propensity score specification resolves this fundamental identification problem.
+
+In sum, while Dehejia and Wahba (1999) made a valuable methodological contribution by improving the statistical estimand through propensity score methods, their results should not be interpreted as causal. The evidence from Imbens and Xu (2025), corroborated by our own analysis in Table 3, strongly suggests that unconfoundedness does not hold in the PSID nonexperimental setting: the treatment and comparison groups differ on unobserved characteristics in ways that no trimming or reweighting strategy based on observed covariates can adequately address. */
 
 
 
