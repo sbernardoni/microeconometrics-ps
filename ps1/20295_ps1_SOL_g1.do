@@ -103,7 +103,7 @@ matrix rownames table_1a = age educ black hisp nodegree re74 re75
 
 matrix list table_1a
 
-esttab matrix(table_1a) using "ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a) using "$output/table_1.tex", replace ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -141,15 +141,15 @@ count if e(sample) & train==1
 scalar treated1 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using "ps1_output/table_2.tex", replace se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", replace se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_3")
 
 	/* Comment: The regression of re78 on train yields an average treatment effect of 1.79 (in units: 1800USD per year) with a standard error of 0.63. When introducing additional covariates, first age, educ, black, and hisp in regression 2 and eventually re74 and re75 in regression 3, the estimated coefficient for train slightly decreases to around 1.69 and 1.68, respectively, while the standard errors remain essentially the same. As neither estimated average effects nor standard errors change substantially, the treatment effect is fairly robust to adding covariates. Omitted variable bias therefore does not seem to be a major limitation to our model, in the sense that the covariates we controlled for do not do not substantially confound the estimation of the relationship between treatment and outcome. */
@@ -189,7 +189,7 @@ preserve
 	estimates store trim10
 restore
 
-esttab trim3 trim5 trim10 using "ps1_output/reg_no_influence.tex", replace tex ///
+esttab trim3 trim5 trim10 using "$output/reg_no_influence.tex", replace tex ///
     title("Regression Results After Removing Extreme Influence Observations") ///
     stats(N, fmt(%9.0g) label("N")) ///
 	nomtitles 
@@ -262,7 +262,7 @@ matrix colnames table_1a_2a = TreatedMean_treat_1a ControlMean_treat_1a TreatedS
 
 matrix list table_1a_2a
 
-esttab matrix(table_1a_2a) using "ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a) using "$output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -347,7 +347,7 @@ matrix list table_2d
 	
 matrix table_1a_2a_2d = table_1a_2a, table_2d
 
-esttab matrix(table_1a_2a_2d) using "ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a_2d) using "$output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -371,15 +371,15 @@ count if e(sample) & train==1
 scalar treated2 = r(N)
 
 regress re78 treated, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_1")
 
 regress re78 treated age educ black hisp, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_2")
 
 regress re78 treated age educ black hisp re74 re75, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_3")
 
 
@@ -407,15 +407,15 @@ count if e(sample) & train==1
 scalar treated3 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using "ps1_output/table_2.tex", append se bdec(3) sdec(3) ///
+outreg2 using "$output/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 
 		
@@ -576,7 +576,7 @@ matrix colnames q4_logit_sum = Min P25 Median P75 Max
 matrix list q4_logit_sum
 
 * save
-esttab matrix(q4_logit_sum) using "ps1_output/q4_logit_ps_summary.tex", replace tex ///
+esttab matrix(q4_logit_sum) using "$output/q4_logit_ps_summary.tex", replace tex ///
     title("Logistic propensity score summary") ///
     cells("result(fmt(4))") nomtitles
 
@@ -648,7 +648,7 @@ matrix colnames q4_rf_sum = Min P25 Median P75 Max
 matrix list q4_rf_sum
 
 * save
-esttab matrix(q4_rf_sum) using "ps1_output/q4_rf_ps_summary.tex", replace tex ///
+esttab matrix(q4_rf_sum) using "$output/q4_rf_ps_summary.tex", replace tex ///
     title("Question 4(a)(2): Random forest propensity score summary") ///
     cells("result(fmt(4))") nomtitles
 
@@ -732,7 +732,7 @@ matrix colnames q4_trim_chars = ///
 matrix list q4_trim_chars
 
 * save
-esttab matrix(q4_trim_chars) using "ps1_output/q4_trimmed_treated_characterization.tex", replace tex ///
+esttab matrix(q4_trim_chars) using "$output/q4_trimmed_treated_characterization.tex", replace tex ///
     title("Kept vs. trimmed treated units") ///
     cells("result(fmt(3))") nomtitles
 
@@ -750,7 +750,7 @@ matrix rownames q4_trim_summary = Logistic RF
 matrix colnames q4_trim_summary = MaxControlPS NumTreatedTrimmed FracTreatedTrimmed
 matrix list q4_trim_summary
 
-esttab matrix(q4_trim_summary) using "ps1_output/q4_trimming_summary.tex", replace tex ///
+esttab matrix(q4_trim_summary) using "$output/q4_trimming_summary.tex", replace tex ///
     title("Trimming summary") ///
     cells("result(fmt(4))") nomtitles
 	
@@ -761,38 +761,38 @@ include the covariate set X as controls. */
 
 /* Regression of re78 using full sample and controls */
 regress re78 train age educ black hisp re74, vce(robust)
-outreg2 using "ps1_output/table_3.tex", replace se bdec(3) sdec(3) ctitle("re78 full")
+outreg2 using "$output/table_3.tex", replace se bdec(3) sdec(3) ctitle("re78 full")
 
 /* Regression of re78 using trimmed sample based on logistic regres
 sion and controls. */
 regress re78 train age educ black hisp re74 if keep_logit == 1, vce(robust)
-outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 logit trim")
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 logit trim")
 
 /* Regression of re78 using trimmed sample based on random forest
 and controls. */
 regress re78 train age educ black hisp re74 if keep_rf == 1, vce(robust)
-outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 RF trim")
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re78 RF trim")
 
 /* Regression of re75 using full sample and controls. */
 regress re75 train age educ black hisp re74, vce(robust)
-outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 full")
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 full")
 
 /* Regression of re75 using trimmed sample based on logistic regres
 sion and controls. */
 regress re75 train age educ black hisp re74 if keep_logit == 1, vce(robust)
-outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 logit trim")
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 logit trim")
 
 /* Regression of re75 using trimmed sample based on random forest
 and controls. */
 regress re75 train age educ black hisp re74 if keep_rf == 1, vce(robust)
-outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 RF trim")
+outreg2 using "$output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 RF trim")
 
 
 /* (5)  Compare the two propensity-score estimators in this application. Your discussion must address: (i) flexibility (nonlinearities/interactions), (ii) tail behavior/calibration and its consequences for trimming, (iii) interpretability and reproducibility, and (iv) how the choice of estimator affects overlap diagnostics and the set of observations discarded. */
 
 /* A: In terms of flexibility, the two propensity-score estimators – the logit model and the random forest – are rather different. The former requires the researcher to impose a linear specification, where any eventual non-linearities or interactions must be modelled explicitly, requiring additional assumptions regarding the relationship between the regressors and the treatment reception. The latter, on the other hand, is a non-parametric method that automatically captures any non-linearities and interactions between the variables. This makes it more flexible and possibly more accurate, if the assignment mechanism is suspected not to be linear in parameters. 
 
-When it comes to the trimming, the graph and the summary statistics regarding the propensity score suggest a greater overlap between the treatment and the control with the logit model with respect to the random forest. This has of course an effect on the trimming and the resulting sample size: while with the first method only 39 observations are excluded, with the second the number of exclusions increases to 120, with possible consequences on the statistical power of the analysis.
+When it comes to the trimming, the graph and the summary statistics regarding the propensity score suggest a greater overlap between the treatment and the control with the logit model with respect to the random forest. This has of course an effect on the trimming and the resulting sample size: while with the first method only 39 observations are excluded, with the second the number of exclusions increases to 120, with possible consequences on the statistical power of the analysis. 
 
 Both methods can be considered to be replicable: the logit model can be easily reproduced using the full model specification, while the specification of a random seed for the random forest ensures replicability despite the randomness that characterises this methodology by construction. Nonetheless, the logit model remains more interpretable, since the coefficients have a clear meaning and show explicitly how each of the regressors affects the treatment assignment. On the other hand, the random forest remains a "black box", where the exact way in which every covariate affects the assignment is not specified.
 
