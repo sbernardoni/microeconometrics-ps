@@ -454,19 +454,19 @@ lassocoef
 	
 	/* (ii) Then, in a second step, run an OLS regression of re78 on train and all the variables selected in the first step. */
 	
-		/* A: According to the output, all of our previous variables were accepted, exception made for ``hisp'' */
+		/* A: The Lasso procedure selected all variables in the original covariate list with the exception of `hisp'. */
 	
 regress re78 train age educ black re74 re75
 	
 	/* (iii) Discuss your results. What are the issues of performing inference based on such a regression? */
 
-		/* A: For what it concerns our regression, we obtain a positive coefficient of 1.67495: this not only reinforces our previous analysis from point (1)a, but it also provides us with a slightly lower p-value which might indicate a more robust model specification.
-		
-		For what it concerns the approach, still, performing inference after a post‐Lasso OLS regression raises several challenges that arise largely from the fact that the model selection step is inherently data‐driven. This extra randomness is typically ignored by conventional OLS inference, leading to standard errors and confidence intervals that are too narrow and p‐values that might misrepresent the true level of uncertainty.
+		/* A: The resulting post-Lasso OLS regression yields a positive treatment coefficient of approximately 1.675, which not only reinforces the findings from Exercise 1(a) but also produces a slightly lower p-value, suggesting a marginally more robust model specification.
 
-		Moreover, a naive approach that applies Lasso solely on the outcome equation can inadvertently drop variables that, while only moderately predictive of the outcome, are strongly correlated with the treatment variable; in this case, the issue is that such omissions risk introducing omitted‐variable bias into the treatment effect estimate. Even if one subsequently re-estimates the model using OLS on the selected variables—often called post‐Lasso—the initial selection step's bias can persist. Lasso's regularization not only shrinks coefficient estimates toward zero, but its selection process can also be sensitive to the penalty level, which further complicates the inference.
+		Regarding the inferential approach, however, performing inference after post-Lasso OLS raises several important concerns that stem from the data-driven nature of the model selection step. This additional source of randomness is typically ignored by conventional OLS inference, resulting in standard errors and confidence intervals that are too narrow and p-values that may misrepresent the true level of uncertainty.
 
-		In essence, while post‐Lasso OLS offers a useful strategy for reducing dimensionality in high-dimensional settings, the inference based on such a regression is fraught with complications. The additional variability introduced by the selection process, along with the risk of omitted-variable bias and regularization bias, means that traditional OLS standard errors are insufficient. Adopting the double selection method is a step in the right direction, but it also necessitates specialized adjustments in the inferential framework to yield reliable conclusions. */
+		Furthermore, applying Lasso solely to the outcome equation risks inadvertently dropping variables that, while only moderately predictive of the outcome, are strongly correlated with the treatment variable. Such omissions can introduce omitted-variable bias into the treatment effect estimate. Even when the model is subsequently re-estimated via OLS on the selected variables — the so-called post-Lasso step — the bias originating from the selection stage may persist. More broadly, Lasso's regularization not only shrinks coefficient estimates toward zero but also makes the selection process sensitive to the choice of penalty level, further complicating inference.
+
+		In short, while post-Lasso OLS offers a useful dimensionality-reduction strategy in high-dimensional settings, the resulting inference is subject to important limitations. The additional variability introduced by the selection process, combined with the risks of omitted-variable bias and regularization bias, renders conventional OLS standard errors insufficient. The double selection procedure represents an improvement, but it too requires specialized inferential adjustments to yield reliable conclusions. */
 
 /* (b) Now perform the "double selection" procedure as described by Belloni et al. (2014). We will perform this for two sets of variables in the exercises below. For each of these cases, you should first perform the "double selection" procedure directly using pdslasso in Stata or rlassoEffect in R and then check each step of this selection by running rlasso either in Stata or R.*/
 
@@ -479,15 +479,15 @@ rlasso train educ age black hisp re74 re75
 
 		/* A: Nothing is selected */
 
-	/* We implemented the double selection procedure following the approach described by Belloni et al. (2014). The procedure involves two key selection steps: one for the outcome (re78) and one for the treatment (train). In both steps, none of the candidate high-dimensional controls—age, black, hisp, re74, and re75—were selected. In other words, the lasso did not add any extra controls beyond the constant term.
+	/* A: We implemented the double selection procedure following the approach described by Belloni et al. (2014). The procedure involves two selection steps: one targeting the outcome (re78) and one targeting the treatment variable (train). In both steps, none of the candidate controls — age, black, hisp, re74, and re75 — were selected by the Lasso. That is, the procedure did not add any extra controls beyond the constant term.
 
-		The final structural equation, estimated with CHS lasso-orthogonalized variables, yields a statistically significant coefficient for the treatment variable (train) of approximately 1.79 (standard error 0.63, p = 0.004). This result indicates that, even after allowing for a data-driven selection of additional controls, the estimated effect of the treatment remains robust and significant.
+		The final structural equation, estimated using CHS lasso-orthogonalized variables, yields a statistically significant treatment coefficient of approximately 1.79 (standard error 0.63, p = 0.004). This indicates that, even after allowing for data-driven selection of additional controls, the estimated effect of the training program remains robust and significant.
 
-		The absence of additional selected controls suggests that the potential confounders in our original variable list do not contribute significantly to explaining the variation in re78 or the treatment assignment beyond what is already captured. Consequently, our original covariate specification appears adequate, and the double selection procedure confirms the robustness of the estimated treatment effect. */
+		The absence of additional selected controls suggests that the candidate confounders do not contribute meaningfully to explaining variation in re78 or in treatment assignment beyond what is already captured by the baseline specification. The double selection procedure therefore confirms the adequacy of the original covariate set and the robustness of the estimated treatment effect. */
 	
 	/* (ii) Now increase the potential selected features by creating dummies for each of the age and educ levels (you're also free to add other variables, such as interactions between controls). Discuss your results and the improvements provided by the "double selection" procedure with respect to the one performed in Q3(a) */
 	
-		/* A1: Given the limited size of our sample, we first decided to create larger groups that could include more observations in order to be able to interpret the controls. */
+		/* A1: Given the limited sample size, we first constructed broader age and education groupings to ensure sufficient observations within each category before attempting any interpretation of the selected controls. */
 	
 egen agegrp = cut(age), group(4)
 tabulate agegrp, generate(agegrp_d)
@@ -497,13 +497,11 @@ tabulate educgrp, generate(educgrp_d)
 
 pdslasso re78 train (age educ black hisp re74 re75 agegrp_d1 agegrp_d2 agegrp_d3 agegrp_d4 educgrp_d1 educgrp_d2 educgrp_d3 educgrp_d4), rlasso loptions(robust)
 
-		/* A1preliminary: In this part, we increased the pool of potential controls by creating categorical dummies for age and education. Specifically, we divided age and education into 6 groups each (using the egen command and then generating dummies), and then added these new variables to the existing list of controls. The purpose was to allow for more flexible (nonlinear) effects of age and education and to test whether these additional features might improve the selection process.
+		/* A: We extended the pool of potential controls by introducing categorical dummies for age and education, dividing each variable into four groups using the egen command. The aim was to allow for more flexible, nonlinear effects of these variables and to test whether the richer functional form might lead the selection procedure to retain additional controls.
 
-			After running the double selection procedure with this expanded set, the results remained consistent with the previous specification: the procedure still did not select any extra controls beyond those already included in the original model with robust lasso (the one we initially decided to discard as it was not providing statistically significant variables), and the estimated effect of the treatment variable remained at approximately 1.79 (with the same standard error and level of significance).
+			The results, however, remain consistent with the previous specification: the double selection procedure again selected no additional controls, and the estimated treatment effect remained at approximately 1.79 with the same standard error and level of statistical significance. This finding suggests that, even when a richer set of functional forms is considered, the additional variables do not contribute meaningful explanatory power for either the outcome or treatment assignment. The original continuous measures of age and education appear to adequately capture the relevant variation, and the covariate balance between treatment and control groups appears sound. */
 
-			This finding is quite informative. It suggests that even when we allow for a richer set of functional forms (through dummies for age and educ), the additional variables do not add explanatory power for predicting either the outcome or the treatment assignment. In other words, the balance between the treatment and control groups with respect to these characteristics appears to be good, and the original continuous measures of age and education already capture the necessary variation. Thus, the double selection procedure confirms the robustness of my original model and implies that the covariate balance is adequate. */
-
-		/* A2: Then, it became apparent that it was too optimistic to interpret the controls, so we decided to use the pdslasso procedure more as of a "balance check" than as a tool to make inference for the variables/controls; we hence include all of the values for age (i.age), all of the values for education (i.educ) and all of the interaction terms (c.educ##c.age) */
+		/* A2: Upon reflection, it became clear that interpreting individual selected controls was overly ambitious given the sample size. We therefore reframed the double selection exercise primarily as a balance check rather than an inferential tool. To this end, we included the full set of age fixed effects (i.age), education fixed effects (i.educ) and all pairwise interaction terms (c.educ##c.age). */
 
 pdslasso re78 train (i.educ i.age c.educ##c.age black hisp re74 re75), rlasso loptions(robust)
 
@@ -513,7 +511,7 @@ rlasso re78 i.educ i.age c.educ##c.age black hisp re74 re75
 count if age == 34
 count if age == 46
 
-		/* A3: Only the ages of 34 and 46 are selected: nonetheless, we are unable to offer an econometric interpretation due to the fact that there are only 6 observations for age = 34 and 3 observations for age = 46. */
+		/* A3: Under this expanded specification, the procedure selected only ages 34 and 46. However, given that there are only 6 observations for age = 34 and 3 observations for age = 46, no meaningful econometric interpretation can be offered for these selections. */
 		
 gen age_34 = (age == 34)
 gen age_46 = (age == 46)
@@ -522,12 +520,9 @@ regress re78 train age_34 age_46
 	
 	/* (iii) What can you say about the balance of the characteristics of the treatment and control group based on the selected variables? */
 	
-		/* A: The results from the double selection procedure—both with the original covariate set and with the expanded set including dummies for age and educ—suggest that the treatment and control groups are well balanced with respect to the observed characteristics. Specifically, the procedure did not select any additional controls beyond those initially specified. This outcome indicates that none of the extra potential predictors (whether in their continuous form or as categorical dummies) were strongly associated with either the outcome (re78) or the treatment assignment (train) beyond what was already captured.
+		/* A: The results from the double selection procedure — both with the original covariate set and the expanded specification including dummies for age and education — consistently suggest that the treatment and control groups are well balanced with respect to observed characteristics. In neither case did the procedure select additional controls, indicating that none of the candidate predictors are strongly associated with either the outcome or treatment assignment beyond what the baseline specification already captures, with the limited exception of the nine observations tied to the selected age values.
 
-			This absence of additional selected variables, exception made for the 9 observations for age, implies that the observable covariates are comparably distributed between the treatment and control groups; In other words, the groups do not differ systematically on these characteristics. Consequently, any differences in the outcome can be more confidently attributed to the training program rather than to pre-existing imbalances. This is an important confirmation because one of the key challenges in observational studies is ensuring that the treatment and control groups are similar in their observable traits.
-
-			Nonetheless, while the balance in observed characteristics is reassuring, it is still crucial to acknowledge that this balance does not rule out the possibility of imbalance in unobserved factors. However, based on the data-driven selection process, the evidence points to a strong level of balance between the groups on the characteristics we can measure, thereby supporting the credibility of the estimated treatment effect. */
-
+			This absence of additional selected variables implies that the observable covariates are comparably distributed across the treatment and control groups, and that any differences in outcomes can be more confidently attributed to the training program rather than to pre-existing imbalances. It bears noting, however, that balance on observed characteristics does not rule out imbalance on unobserved factors. Nonetheless, the evidence from the data-driven selection process points to a strong degree of balance on measurable characteristics, thereby supporting the credibility of the estimated treatment effect. */
 
 
 *=============================================================================
