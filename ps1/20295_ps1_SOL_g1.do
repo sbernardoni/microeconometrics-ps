@@ -56,8 +56,8 @@ if ("`user'" == "flore") {
 
 
 if ("`user'" == "gabrielemole") {
-    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
+    global filepath ""C:\Users\Stealth\Desktop\microeconometrics-ps\ps1""
+	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1\ps1_output"
 }
 
 *=============================================================================
@@ -65,7 +65,7 @@ if ("`user'" == "gabrielemole") {
 /* Use the file jtrain2 													*/
 *=============================================================================
 
-use "https://github.com/sbernardoni/microeconometrics-ps/raw/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Construct a table checking for balance across treatment and control for the following covariates: age educ black hisp nodegree re74 re75.
 Name it TABLE_1.
@@ -205,9 +205,7 @@ Thus, why we can indeed rely on effectiveness of the treatment (in the sense of 
 /* Use the jtrain3 															*/
 *=============================================================================
 
-* SBLOCCA STO COSO PER AVERE ACCESSO ALL'ALTRO DATASET | NON USARLI ENTRAMBI, QUESTO CANCELLA IL DATASET PRECEDENTE *
-
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain3.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain3.dta", clear
 
 /* (a) Do a table with the same structure of TABLE 1 of item (a) in question 1 for the following covariates: age educ black hisp re74 re75 (note that nodegree is not present in the current dataset.) Add the corresponding columns to TABLE 1. */
 
@@ -286,7 +284,7 @@ randtreat, generate(treated_2) setseed(20295) misfits(strata) // check this out 
 	
 pwcorr treated treated_2, sig
 
-	/* A: The correlation is close to 0 and not statistically significant. This is consistent with random assignments with different algorithms. If an assignment is truly random it should be uncorrelated with other random assignments adopting different techniques even when using the same seed.*/
+	/* A: The correlation is virtually null and statistically not significant. This is due to different algorithms inducing a random assignment: as the assignments are both random and rely on different “randomization algorithms”, they are uncorrelated even when using the same seed. */
 
 /* (d) Do a table with the same structure of TABLE 1 of item (a) in question 1., but using treated instead of train. */ 
 
@@ -353,7 +351,7 @@ esttab matrix(table_1a_2a_2d) using "$output/table_1.tex", replace tex ///
 	
 	/* (iii) What you find corresponds to your expectations? */
 	
-		/* A: All variables are statistically balanced when using random assignment to the fake treatment. This is coherent with theoretical expectations as the treatment is randomly assigned and one should expect that almost all variables are balanced, possibly with some exceptions due to chance. As we are dealing with relatively few variables it was more likely to observe them all balanced. Experimental data gave a different picture, almost completely imbalanced, a difference that is due to the very different nature of the data. */
+		/* A: As we randomly assigned the treatment one should expect almost all variables to be balanced with minor exceptions due to chance (1/20 with 95% level confidence intervals). This is indeed what we observe: all variables are statistically balanced when using random assignment to the fake treatment. It was also more likely to observe them all balanced as we are dealing with relatively few variables. Experimental data gave a different picture, almost completely imbalanced, a difference that is due to the very different nature of the data. */
 
 /* (e)  */
 
@@ -389,7 +387,7 @@ addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_3")
 	
 	/* (iii) Comment on what you find. Is it what you expected? */
 	
-		/* A: In the first regression, the treatment dummy is slightly negative yet insignificant. After controlling for other covariates, the point estimate moves closer to 0 and remains statistically insignificant. As expected, adding covariates slightly improves standard errors for the treatment dummy. This is in line with the assignment of a random pseudo-treatment, hence yielding a null effect due to his random nature. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
+		/* A: We expect pseudo-treatment to have no effect as it is random in nature. Indeed, starting in regression 1) we find a slightly negative yet insignificant coefficient for the treatment variable. Adding covariates should improve efficiency by lowering standard errors: in regression 2) and 3) the point estimate of treatment moves closer to 0 but remains statistically insignificant and confidence intervals get progressively smaller. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
 
 /* (f) */
 
@@ -425,7 +423,8 @@ addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 	
 	/* (iii) Compare the results with the first three columns of TABLE 2.  Comment on what you find. Is it what you expected? Are your results sensitive to the introduction of covariates? */ 
 	
-		/* A: The first regression of real earnings on the training program shows a significant and strong negative effect of the training program (-15.20), differently from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. While the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2, the "treatment effect" disappears in jtrain3 after controlling for the other variables. Adding controls to jtrain3 makes the point estimate gradually drop to a slightly positive value close to 0 and lose its statistical significance, partially resembling the result in the previous subpoint. Covariates also show change in magnitude and significance after adding controls. An example is "age" that changes sign and drops in magnitude after controlling for real earnings. This difference is due to the different nature of the datasets, namely experimental and non-experimental, and as such it was in line with our expectations to find discrepancies.  */
+		/* A: As jtrain3 includes a non-experimental control, we expect to see a different behavior compared to experimental data (jtrain2) and higher sensitivity to adding covariates that might be capturing some endogenous selection. Regression 1) yields a significant and strong negative coefficient for the training program (-15.20). This is different from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. Adding covariates in jtrain3 progressively reduces the point estimate: in regression 3) the estimated coefficient for train drops closely to 0 and becomes statistically insignificant, in a quite similar fashion to the previous subpoint. Conversely, the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2. Covariates also show change in magnitude and significance after adding controls. An example is "age" that changes sign and drops in magnitude after controlling for real earnings. */
+
 
 *=============================================================================
 /* 								Question 3 									*/
@@ -433,7 +432,7 @@ addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 You may use the lassopack package in Stata or the hdm package in R to perform your analysis. To answer the questions below, read Belloni et al. (2014) to understand the "double selection" procedure and check the help files of the commands above in the language you chose. */
 *=============================================================================
 
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
 /* (a) Revisit your analysis of the data set jtrain2 in exercise 1 as a post-Lasso OLS estimation. */
 
@@ -452,19 +451,19 @@ lassocoef
 	
 	/* (ii) Then, in a second step, run an OLS regression of re78 on train and all the variables selected in the first step. */
 	
-		/* A: According to the output, all of our previous variables were accepted, exception made for ``hisp'' */
+		/* A: The Lasso procedure selected all variables in the original covariate list with the exception of `hisp'. */
 	
 regress re78 train age educ black re74 re75
 	
 	/* (iii) Discuss your results. What are the issues of performing inference based on such a regression? */
 
-		/* A: For what it concerns our regression, we obtain a positive coefficient of 1.67495: this not only reinforces our previous analysis from point (1)a, but it also provides us with a slightly lower p-value which might indicate a more robust model specification.
-		
-		For what it concerns the approach, still, performing inference after a post‐Lasso OLS regression raises several challenges that arise largely from the fact that the model selection step is inherently data‐driven. This extra randomness is typically ignored by conventional OLS inference, leading to standard errors and confidence intervals that are too narrow and p‐values that might misrepresent the true level of uncertainty.
+		/* A: The resulting post-Lasso OLS regression yields a positive treatment coefficient of approximately 1.675, which not only reinforces the findings from Exercise 1(a) but also produces a slightly lower p-value, suggesting a marginally more robust model specification.
 
-		Moreover, a naive approach that applies Lasso solely on the outcome equation can inadvertently drop variables that, while only moderately predictive of the outcome, are strongly correlated with the treatment variable; in this case, the issue is that such omissions risk introducing omitted‐variable bias into the treatment effect estimate. Even if one subsequently re-estimates the model using OLS on the selected variables—often called post‐Lasso—the initial selection step's bias can persist. Lasso's regularization not only shrinks coefficient estimates toward zero, but its selection process can also be sensitive to the penalty level, which further complicates the inference.
+		Regarding the inferential approach, however, performing inference after post-Lasso OLS raises several important concerns that stem from the data-driven nature of the model selection step. This additional source of randomness is typically ignored by conventional OLS inference, resulting in standard errors and confidence intervals that are too narrow and p-values that may misrepresent the true level of uncertainty.
 
-		In essence, while post‐Lasso OLS offers a useful strategy for reducing dimensionality in high-dimensional settings, the inference based on such a regression is fraught with complications. The additional variability introduced by the selection process, along with the risk of omitted-variable bias and regularization bias, means that traditional OLS standard errors are insufficient. Adopting the double selection method is a step in the right direction, but it also necessitates specialized adjustments in the inferential framework to yield reliable conclusions. */
+		Furthermore, applying Lasso solely to the outcome equation risks inadvertently dropping variables that, while only moderately predictive of the outcome, are strongly correlated with the treatment variable. Such omissions can introduce omitted-variable bias into the treatment effect estimate. Even when the model is subsequently re-estimated via OLS on the selected variables — the so-called post-Lasso step — the bias originating from the selection stage may persist. More broadly, Lasso's regularization not only shrinks coefficient estimates toward zero but also makes the selection process sensitive to the choice of penalty level, further complicating inference.
+
+		In short, while post-Lasso OLS offers a useful dimensionality-reduction strategy in high-dimensional settings, the resulting inference is subject to important limitations. The additional variability introduced by the selection process, combined with the risks of omitted-variable bias and regularization bias, renders conventional OLS standard errors insufficient. The double selection procedure represents an improvement, but it too requires specialized inferential adjustments to yield reliable conclusions. */
 
 /* (b) Now perform the "double selection" procedure as described by Belloni et al. (2014). We will perform this for two sets of variables in the exercises below. For each of these cases, you should first perform the "double selection" procedure directly using pdslasso in Stata or rlassoEffect in R and then check each step of this selection by running rlasso either in Stata or R.*/
 
@@ -477,15 +476,15 @@ rlasso train educ age black hisp re74 re75
 
 		/* A: Nothing is selected */
 
-	/* We implemented the double selection procedure following the approach described by Belloni et al. (2014). The procedure involves two key selection steps: one for the outcome (re78) and one for the treatment (train). In both steps, none of the candidate high-dimensional controls—age, black, hisp, re74, and re75—were selected. In other words, the lasso did not add any extra controls beyond the constant term.
+	/* A: We implemented the double selection procedure following the approach described by Belloni et al. (2014). The procedure involves two selection steps: one targeting the outcome (re78) and one targeting the treatment variable (train). In both steps, none of the candidate controls — age, black, hisp, re74, and re75 — were selected by the Lasso. That is, the procedure did not add any extra controls beyond the constant term.
 
-		The final structural equation, estimated with CHS lasso-orthogonalized variables, yields a statistically significant coefficient for the treatment variable (train) of approximately 1.79 (standard error 0.63, p = 0.004). This result indicates that, even after allowing for a data-driven selection of additional controls, the estimated effect of the treatment remains robust and significant.
+		The final structural equation, estimated using CHS lasso-orthogonalized variables, yields a statistically significant treatment coefficient of approximately 1.79 (standard error 0.63, p = 0.004). This indicates that, even after allowing for data-driven selection of additional controls, the estimated effect of the training program remains robust and significant.
 
-		The absence of additional selected controls suggests that the potential confounders in our original variable list do not contribute significantly to explaining the variation in re78 or the treatment assignment beyond what is already captured. Consequently, our original covariate specification appears adequate, and the double selection procedure confirms the robustness of the estimated treatment effect. */
+		The absence of additional selected controls suggests that the candidate confounders do not contribute meaningfully to explaining variation in re78 or in treatment assignment beyond what is already captured by the baseline specification. The double selection procedure therefore confirms the adequacy of the original covariate set and the robustness of the estimated treatment effect. */
 	
 	/* (ii) Now increase the potential selected features by creating dummies for each of the age and educ levels (you're also free to add other variables, such as interactions between controls). Discuss your results and the improvements provided by the "double selection" procedure with respect to the one performed in Q3(a) */
 	
-		/* A1: Given the limited size of our sample, we first decided to create larger groups that could include more observations in order to be able to interpret the controls. */
+		/* A1: Given the limited sample size, we first constructed broader age and education groupings to ensure sufficient observations within each category before attempting any interpretation of the selected controls. */
 	
 egen agegrp = cut(age), group(4)
 tabulate agegrp, generate(agegrp_d)
@@ -495,13 +494,11 @@ tabulate educgrp, generate(educgrp_d)
 
 pdslasso re78 train (age educ black hisp re74 re75 agegrp_d1 agegrp_d2 agegrp_d3 agegrp_d4 educgrp_d1 educgrp_d2 educgrp_d3 educgrp_d4), rlasso loptions(robust)
 
-		/* A1preliminary: In this part, we increased the pool of potential controls by creating categorical dummies for age and education. Specifically, we divided age and education into 6 groups each (using the egen command and then generating dummies), and then added these new variables to the existing list of controls. The purpose was to allow for more flexible (nonlinear) effects of age and education and to test whether these additional features might improve the selection process.
+		/* A: We extended the pool of potential controls by introducing categorical dummies for age and education, dividing each variable into four groups using the egen command. The aim was to allow for more flexible, nonlinear effects of these variables and to test whether the richer functional form might lead the selection procedure to retain additional controls.
 
-			After running the double selection procedure with this expanded set, the results remained consistent with the previous specification: the procedure still did not select any extra controls beyond those already included in the original model with robust lasso (the one we initially decided to discard as it was not providing statistically significant variables), and the estimated effect of the treatment variable remained at approximately 1.79 (with the same standard error and level of significance).
+			The results, however, remain consistent with the previous specification: the double selection procedure again selected no additional controls, and the estimated treatment effect remained at approximately 1.79 with the same standard error and level of statistical significance. This finding suggests that, even when a richer set of functional forms is considered, the additional variables do not contribute meaningful explanatory power for either the outcome or treatment assignment. The original continuous measures of age and education appear to adequately capture the relevant variation, and the covariate balance between treatment and control groups appears sound. */
 
-			This finding is quite informative. It suggests that even when we allow for a richer set of functional forms (through dummies for age and educ), the additional variables do not add explanatory power for predicting either the outcome or the treatment assignment. In other words, the balance between the treatment and control groups with respect to these characteristics appears to be good, and the original continuous measures of age and education already capture the necessary variation. Thus, the double selection procedure confirms the robustness of my original model and implies that the covariate balance is adequate. */
-
-		/* A2: Then, it became apparent that it was too optimistic to interpret the controls, so we decided to use the pdslasso procedure more as of a "balance check" than as a tool to make inference for the variables/controls; we hence include all of the values for age (i.age), all of the values for education (i.educ) and all of the interaction terms (c.educ##c.age) */
+		/* A2: Upon reflection, it became clear that interpreting individual selected controls was overly ambitious given the sample size. We therefore reframed the double selection exercise primarily as a balance check rather than an inferential tool. To this end, we included the full set of age fixed effects (i.age), education fixed effects (i.educ) and all pairwise interaction terms (c.educ##c.age). */
 
 pdslasso re78 train (i.educ i.age c.educ##c.age black hisp re74 re75), rlasso loptions(robust)
 
@@ -511,7 +508,7 @@ rlasso re78 i.educ i.age c.educ##c.age black hisp re74 re75
 count if age == 34
 count if age == 46
 
-		/* A3: Only the ages of 34 and 46 are selected: nonetheless, we are unable to offer an econometric interpretation due to the fact that there are only 6 observations for age = 34 and 3 observations for age = 46. */
+		/* A3: Under this expanded specification, the procedure selected only ages 34 and 46. However, given that there are only 6 observations for age = 34 and 3 observations for age = 46, no meaningful econometric interpretation can be offered for these selections. */
 		
 gen age_34 = (age == 34)
 gen age_46 = (age == 46)
@@ -520,13 +517,11 @@ regress re78 train age_34 age_46
 	
 	/* (iii) What can you say about the balance of the characteristics of the treatment and control group based on the selected variables? */
 	
-		/* A: The results from the double selection procedure—both with the original covariate set and with the expanded set including dummies for age and educ—suggest that the treatment and control groups are well balanced with respect to the observed characteristics. Specifically, the procedure did not select any additional controls beyond those initially specified. This outcome indicates that none of the extra potential predictors (whether in their continuous form or as categorical dummies) were strongly associated with either the outcome (re78) or the treatment assignment (train) beyond what was already captured.
+		/* A: The results from the double selection procedure — both with the original covariate set and the expanded specification including dummies for age and education — consistently suggest that the treatment and control groups are well balanced with respect to observed characteristics. In neither case did the procedure select additional controls, indicating that none of the candidate predictors are strongly associated with either the outcome or treatment assignment beyond what the baseline specification already captures, with the limited exception of the nine observations tied to the selected age values.
 
-			This absence of additional selected variables, exception made for the 9 observations for age, implies that the observable covariates are comparably distributed between the treatment and control groups; In other words, the groups do not differ systematically on these characteristics. Consequently, any differences in the outcome can be more confidently attributed to the training program rather than to pre-existing imbalances. This is an important confirmation because one of the key challenges in observational studies is ensuring that the treatment and control groups are similar in their observable traits.
+			This absence of additional selected variables implies that the observable covariates are comparably distributed across the treatment and control groups, and that any differences in outcomes can be more confidently attributed to the training program rather than to pre-existing imbalances. It bears noting, however, that balance on observed characteristics does not rule out imbalance on unobserved factors. Nonetheless, the evidence from the data-driven selection process points to a strong degree of balance on measurable characteristics, thereby supporting the credibility of the estimated treatment effect. */
 
-			Nonetheless, while the balance in observed characteristics is reassuring, it is still crucial to acknowledge that this balance does not rule out the possibility of imbalance in unobserved factors. However, based on the data-driven selection process, the evidence points to a strong level of balance between the groups on the characteristics we can measure, thereby supporting the credibility of the estimated treatment effect. */
-			
-			
+
 *=============================================================================
 /* 								Question 4 									*/
 /* Over time, several articles have revisited LaLonde's results and provided a rich discussion about the best practices when working with observational data. A recent article, "Comparing Experimental and Nonexperimental Methods: What Lessons Have We Learned Four Decades after LaLonde (1986)?", summarizes this debate and discusses some of the recent advances on the topic. Read Imbens and Xu (2025) and
@@ -801,6 +796,23 @@ In addition, the fact that the coefficient of train is significant even in the p
 
 */
 	
+
+
+/* (b) The results from (Dehejia and Wahba, 1999) showed that observational methods could replicate the experimental results in LaLonde (1986)’s setting. Discuss the implications of the points discussed by Imbens and Xu (2025) on this debate. Can we interpret the results from Dehejia and Wahba (1999) as causal? How do you connect your results in point (a) to this discussion? */
+
+
+		/* Imbens and Xu (2025) draw a crucial distinction between the *statistical estimand* and the *causal estimand*. The former is a function of observed data, and the adoption of modern methods — such as doubly robust estimators — has yielded more robust and precise estimates of it. The latter is the Average Treatment Effect on the Treated (ATT), which can only be recovered from the statistical estimand under an additional identifying assumption: unconfoundedness. Crucially, improving estimation of the statistical estimand does not guarantee convergence to the true causal effect. Whether it does depends on the plausibility of unconfoundedness, which must be assessed through diagnostic exercises such as placebo tests.
+
+Dehejia and Wahba (1999) advanced the debate by introducing propensity score stratification and matching, paired with a principled trimming strategy to improve comparability between the nonexperimental control group and the treated units. This refined LaLonde's (1986) original ad hoc subsetting approach and, as Imbens and Xu (2025) note, anticipated the now-standard practice of assessing overlap through the propensity score distribution. However, two limitations prevent interpreting their estimates as causal. First, they focus exclusively on the ATT without examining treatment effect heterogeneity, which subsequent literature has shown to be substantial. Second, and more fundamentally, they conduct no formal placebo tests, which have since become standard practice for assessing unconfoundedness.
+
+Our results in point (a) reinforce and sharpen this conclusion. Table 3 reports OLS estimates of the treatment effect on 1978 earnings (columns 1–3) and on 1975 earnings as a placebo outcome (columns 4–6), across the full sample and two trimmed samples based on logistic and random forest propensity scores. Using the experimental estimate from jtrain2 ($1,794) as the external benchmark, none of the re78 estimates are close to it: the full-sample estimate is −$929 (insignificant), the logit-trimmed estimate is −$982 (insignificant), and the random forest-trimmed estimate is −$4,518 (significant at 1%). Rather than converging toward the experimental benchmark, trimming based on the random forest propensity score worsens the estimate. This is consistent with the trimming statistics from part (a)(3), where the random forest specification discards a larger fraction of treated units than the logit, suggesting that its more aggressive trimming distorts the composition of the remaining sample in ways that amplify rather than attenuate selection bias. Yet one major drawback of our trimming strategy is that it does not resolve the issue with overlap. The distributions of the propensity score over the control and treatment group are skewed in different directions, potentially harming the reliability of our results. That is also the reason why Imbens and Xu (2025) perform an additional 1:1 matching strategy in the original paper, which is missing here.
+
+The placebo results are unambiguous. The estimated effect on 1975 earnings — a pre-program outcome that could not have been causally affected by training — is −$2,006 (p < 0.01) in the full sample, −$2,263 (p < 0.01) with logit trimming, and −$3,550 (p < 0.01) with random forest trimming. The fact that trimming not only fails to eliminate but amplifies the placebo effect provides clear evidence against unconfoundedness: even after restricting to the region of common support, treated and PSID control units differ systematically on unobserved dimensions correlated with earnings. Neither propensity score specification resolves this fundamental identification problem.
+
+In sum, while Dehejia and Wahba (1999) made a valuable methodological contribution by improving the statistical estimand through propensity score methods, their results should not be interpreted as causal. The evidence from Imbens and Xu (2025), corroborated by our own analysis in Table 3, strongly suggests that unconfoundedness does not hold in the PSID nonexperimental setting: the treatment and comparison groups differ on unobserved characteristics in ways that no trimming or reweighting strategy based on observed covariates can adequately address. */
+
+
+
 *=============================================================================
 /* 								Question 5 									*/
 /* Use the jtrain2 data set.
@@ -809,76 +821,71 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 
 /* (a) Under which conditions, allowing for heterogeneous treatment effects, is Neyman's inference unbiased? */
 
-	/*A: Neyman, in the context of inference from random experiments, proposed as an estimator the difference in average outcomes by treatment status, so for treatment and control groups. Allowing heterogeneous treatment effects, for the estimator proposed by Neyman to be unbiased pure randomisation must hold, so it must be a completely randomized experiment. This holds when there is independence of treatment assignement and potential outcomes. On the other hand, if we are considering the estimation of the standard error, for the estimator to be unbiased under heterogeneous treatment effects, it must be possible to view the sample analyzed as a random sample from an infinite population. */
+	/*A: The estimator suggested by Neyman for the average treatment effect for the sample being analysed is the difference in average outcomes by treatment status – that is, between the treatment and the control group. Allowing for heterogeneous treatment effects, the unbiasedness of this estimator relies on pure randomisation (independence of treatment assignment and potential outcomes), which implies that all potential outcomes are fixed and therefore that the expected value of the second term of the estimator is zero. The unbiasedness of the standard error of Neyman's estimator requires, on the other hand, that it is possible to view the sample under analysis as a random sample from an infinite population. In this case, Neyman's estimator is interpreted as an estimator for the population average treatment effect instead of the sample average treatment effect. */
 
 /* (b) Describe Fisher's inference and replicate section 4.1 of Athey and Imbens (2017) in Stata. Do you arrive at their same p-value? If not, why? Hint: Note that you can draw motivation from third-parties for your own answer; for this case, we suggest that you read Heß (2017).*/ 
 
-	/*A: Fisher's inference is based on testing the sharp null hypothesis, which is the null hypothesis under which we can infer all the missing potential outcomes from the observed ones. A typical choice is the null hypothesis that the treatment has no effect. The alternative hypothesis is that there exists at least one unit such that this does not hold. This type of inference, also called Fishearian Randomization Inference, produces a distribution of a test statistic under a null hypothesis, and it helps the researcher understand if the observed value of the statistic is "extreme", and so it helps understand whether the null hypothesis must be rejected. Fisher's inference makes it possible to infer, for any statistic that is a function of the Y^obs (observed outcomes), W (treatment) and X (covariates), the exact distribution of that statistic under the null hypothesis.*/
+	/*A: Fisher's work on inference relies on the idea of testing the sharp null hypothesis – that is a null hypothesis under which it is possible to infer all the missing potential outcomes from the observed ones. Generally, the sharp null hypothesis is that the treatment has no effect, with the alternative being that there exists at least one unit such that the two potential outcomes are different. The advantage of this approach is that it allows the researcher to infer, for any statistic that is a function of the observed outcomes, the treatment, and the covariates, its exact distribution under the null. Hence, it is possible to calculate the probability of such statistic taking on a value that is as large in absolute value as the one observed in the experimental setting, and to eventually reject the null hypothesis (or fail to do so).*/
 
-* (b) 
+* (b)
 
-use "https://github.com/sbernardoni/microeconometrics-ps/blob/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
+use "https://raw.githubusercontent.com/sbernardoni/microeconometrics-ps/06b798693174efb8e85c8f805ac242c8fe9d2302/ps1/ps1_data/jtrain2.dta", clear
 
-*calculating the simple difference in means
-*seed set at 20295 to mantain coherence
+/* We set the seed as 20295 to ensure replicability of the results */
 
-*default of 100 permutations
+/* Maintaining the default of 100 permutations */
 ritest train _b[train], seed(20295): ///
 	reg re78 train 
 
-*running same test with 1000 permutations
+/* Changing the number of permutations to 1000 */
 ritest train _b[train], reps(1000) seed(20295): ///
 	reg re78 train 
 
-*running the same test with 10000 permutations
+/* Changing the number of permutations to 10000 */
 ritest train _b[train], reps(10000) seed(20295): ///
     reg re78 train 
 
-	/* A: We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017). We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is slightly smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the random nature of the permutation sampling.*/
+	/* A: We replicated the results in section 4.1 of Athey and Imbens (2017) using the methodology described in Heß (2017). With 100 iterations (the default setting in the ritest command), we obtain an estimated p-value that is approximately 0. Repeating the analysis with 1000 iterations instead, we obtain an estimated p-value of 0.002, with a 95% confidence interval between 0.0002 and 0.0072. Finally, we repeated the test with 10000 random permutations: the estimated p-value is 0.0048, with a 95% confidence interval between 0.0035 and 0.0064. The point estimate is very similar to the one obtained by Athey and Imbens (2017) and suggests the rejection of the null hypothesis of no treatment effect. The slight numerical difference between the two results is most likely due to the randomness of the permutations. */
 
 /* (c) Read again the randomization plan in LaLonde (1986). On which grounds Athey and Imbens (2017)'s illustration of Fisherian inference on LaLonde (1986)'s paper could be criticized? */
 
-	/* A: The main critique that could be moved against Athey and Imbens (2017) illustration of Lalonde (1986)'s paper is how randomization was carried out in the original experiment versus how it was reproduced in the Athey and Imbens paper. In particular, the treatment in the data analyzed by Lalonde was given out by 10 different sites of the project, while in the Athey and Imbens (2017) Fisherian inference illustration, the data is treated as if the treatment was randomly assigned across the sample, without the intervention of the single sites. An important assumption when conducting Fisherian inference is that all treatment assignments are equally likely, so if site-specific factors influence outcomes or the assignment process, this assumption might not hold, and for this reason it could lead to incorrect p-values, and so to incorrect conclusions about statistical significance. */
+	/* A: Comparing the randomisation plan in LaLonde (1986) and in Athey and Imbens (2017), we can observe that there are some differences that may affect the estimation of the p-values. Indeed, in the original paper the treatment was administered by different agencies located in 10 separate sites, that provided different work experiences and even different types of work. On the other hand, the Fisherian inference approach assigns the treatment randomly across the sample without taking into account the role of the individual site. Hence, if there exist site-specific factors affecting the assignment process or the treatment outcomes, the approach by Athey and Imbens (2017) may lead to biased estimates of the p-values, and therefore to an incorrect evaluation of the significance of the treatment effect. */
 
 /* (d) The article Channeling Fisher: Randomization Tests and the Statistical Insignificance of Seemingly Significant Experimental Results (Young, 2019) presents the results of an exercise to test the null hypothesis of no treatment effects in a series of experimental papers recently published in AEA journals, showing that many of the coefficients reported in those papers are no longer significant in a randomization test. A critique of this paper has been published by professors Uri Johnson, Leif Nelson and Joe Simmons in their blog, Data Colada. Read their post here and answer the questions below. */
 
 	/* (i) Briefly explain the difference between the procedure used as the default in Stata for the calculation of standard errors (HC1) and the one proposed by the Data Colada post (HC3). */
 	
-		/* A: In HC1 Robust Standard Errors, the diagonal elementes of the variance-covariance matrix are substitued with Robust Standard error, based on non-constant variance, which are the squared residuals, weighted by the following coefficient n/(n-k). HC1 robust standard errors are the default in Stata. 
-
-HC3 Robust Standard Errors, on the other hand, are widely used and considered as the best standard errors when heteroskedasticity is present. The diagonal elements of the variance-covariance matrix are replaced by the squared residuals divided by (1-h)^2, h being the hat values that range from 0 to 1. */
+		/* A: HC1 robust standard errors are the default setting in Stata. In this framework, the diagonal elements of the variance-covariance matrix are the squared residuals weighted by the coefficient n/(n-k), where k is the number of regressors. This allows the conditional variance of the errors to be non-constant, which departs from the classical assumptions of the linear regression model. On the contrary, with HC3 robust standard errors the diagonal entries of the variance-covariance matrix are the squared residuals weighted by (1-h)^2, where h is the leverage of each observation in the regression model and ranges from 0 to 1. This approach is widely used and considered as preferrable under conditional heteroskedasticity. */
 	
 	/* (ii) Using the dataset jtrain2, rerun the analysis you have performed in exercise 1, now calculating the standard errors based on HC3 (this is done in Stata using the option vce() in your regression command). */
 
-*First regression
+/* First regression */
 regress re78 train, vce(hc3)
 
-*second regression
+/* Second regression */
 regress re78 train age educ black hisp, vce(hc3) 
 
-*third regression
+/* Third regression */
 regress re78 train age educ black hisp re74 re75, vce(hc3)
 
 
 
 	/* (iii) Perform a third version of your analysis, now based on bootstrapping (use the bootstrap command in Stata). Briefly describe how the standard errors are calculated in this approach. */
 
-*first regression
+/* First regression */
 bootstrap _b, reps(1000): regress re78 train
-*second regression
+
+/* Second regression */
 bootstrap _b, reps(1000): regress re78 train age educ black hisp
-*third regression
+
+/* Third regression */
 bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 
-		/* A: Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error */
+		/* A: Bootstrapping is a non-parametric statistical method where the sampling variation of an estimate is obtained by resampling the data with replacement multiple times. For each resample obtained with this procedure (the standard on Stata is 50), the statistic of interest is then computed as usual. Finally, the standard deviation of the statistic across replications is obtained, which is called the bootstrap standard error. */
 	
 	/* (iv) Do any of your conclusions regarding the effect of the training program change based on the analysis performed in this exercise? Based on the discussion provided in the Data Colada post, can you think of a reason for why your results using HC3 should or shouldn't change for this exercise? 
 
-		/* A: The regressions performed in this exercise yield the same results as the regressions performed in exercise 1. In particular, the coefficients for all three specifications (non-robust standard errors, HC3 and bootstrapping) are substantially the same, and the only difference between the results of the two analyses are the standard errors, even though the variation is small and does not change the significance of the results found. HC3 standard errors are slightly higher, in line with theoretical expectations.
-		
-		The fact that coefficients remain consistent across specifications, with only slight change in the confidence intervals, is an indicator of the robustness of the analysis performed. 
-		
-		Based on the discussion in the Data Colada post, it was to be expected that the results do not change, since the sample size is larger than 250 observations, and we know that HC3 performs much better than the HC1 default standard error option when the sample size is small. 
-		
-		Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. */
+		/* A: The results obtained in this exercise are essentially the same as the ones obtained in exercise 1. Indeed, the coefficients in the three specification are remarkably similar, and there is only a small variation in their standard errors, with no effect on their significance. This suggests that our analysis is robust, and that the results obtained – as well as the the conclusions that can be drawn from them – are not conditional on a certain specification.
+
+As expected from their formulation, the robust standard errors with the HC3 specification are slightly higher when compared to the others. Nonetheless, as suggested by the Data Colada post, the fact that our results are unchanged after the application of HC3 robust standard errors is not surprising: the difference in terms of performance between the specifications happens in fact with samples under 250 observations, which is not the case in this context. */
 	
