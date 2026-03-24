@@ -1,0 +1,37 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Regression Results After Removing Extreme Influence Observations}
+\begin{tabular}{l*{3}{c}}
+\hline\hline
+            &\multicolumn{1}{c}{(1)}         &\multicolumn{1}{c}{(2)}         &\multicolumn{1}{c}{(3)}         \\
+\hline
+train       &       1.358\sym{*}  &       1.224\sym{*}  &       1.022\sym{*}  \\
+            &      (2.53)         &      (2.40)         &      (2.18)         \\
+[1em]
+age         &      0.0602         &      0.0488         &      0.0315         \\
+            &      (1.67)         &      (1.39)         &      (0.95)         \\
+[1em]
+educ        &       0.235         &       0.236         &       0.170         \\
+            &      (1.82)         &      (1.82)         &      (1.35)         \\
+[1em]
+black       &      -2.807\sym{**} &      -2.907\sym{**} &      -2.976\sym{**} \\
+            &     (-2.96)         &     (-3.08)         &     (-3.23)         \\
+[1em]
+hisp        &      -0.236         &      -0.599         &      -0.716         \\
+            &     (-0.18)         &     (-0.50)         &     (-0.63)         \\
+[1em]
+re74        &    -0.00359         &   -0.000663         &      0.0220         \\
+            &     (-0.05)         &     (-0.01)         &      (0.32)         \\
+[1em]
+re75        &      0.0934         &      0.0870         &      0.0593         \\
+            &      (0.81)         &      (0.77)         &      (0.57)         \\
+[1em]
+\_cons      &       2.637         &       2.983         &       3.945\sym{*}  \\
+            &      (1.31)         &      (1.48)         &      (2.03)         \\
+\hline
+N           &         439         &         435         &         425         \\
+\hline\hline
+\multicolumn{4}{l}{\footnotesize \textit{t} statistics in parentheses}\\
+\multicolumn{4}{l}{\footnotesize \sym{*} \(p<0.05\), \sym{**} \(p<0.01\), \sym{***} \(p<0.001\)}\\
+\end{tabular}
+\end{table}

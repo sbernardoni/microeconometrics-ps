@@ -56,7 +56,7 @@ if ("`user'" == "flore") {
 
 
 if ("`user'" == "gabrielemole") {
-    global filepath ""C:\Users\Stealth\Desktop\microeconometrics-ps\ps1""
+    global filepath "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1"
 	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1\ps1_output"
 }
 
