@@ -788,8 +788,7 @@ regress re75 train age educ black hisp re74 if keep_rf == 1, vce(robust)
 outreg2 using "ps1_output/table_3.tex", append se bdec(3) sdec(3) ctitle("re75 RF trim")
 
 
-/* (5)  Compare the two propensity-score estimators in this application. Your dis
-cussion must address: (i) flexibility (nonlinearities/interactions), (ii) tail behavior/calibration and its consequences for trimming, (iii) interpretability and reproducibility, and (iv) how the choice of estimator affects overlap diagnostics and the set of observations discarded. */
+/* (5)  Compare the two propensity-score estimators in this application. Your discussion must address: (i) flexibility (nonlinearities/interactions), (ii) tail behavior/calibration and its consequences for trimming, (iii) interpretability and reproducibility, and (iv) how the choice of estimator affects overlap diagnostics and the set of observations discarded. */
 
 /* A: In terms of flexibility, the two propensity-score estimators – the logit model and the random forest – are rather different. The former requires the researcher to impose a linear specification, where any eventual non-linearities or interactions must be modelled explicitly, requiring additional assumptions regarding the relationship between the regressors and the treatment reception. The latter, on the other hand, is a non-parametric method that automatically captures any non-linearities and interactions between the variables. This makes it more flexible and possibly more accurate, if the assignment mechanism is suspected not to be linear in parameters. 
 
@@ -799,6 +798,7 @@ Both methods can be considered to be replicable: the logit model can be easily r
 
 Overall, the differences in the outcomes of the regressions (and therefore the differences in the trimming) are caused by the different way in which the models capture the relationship between the treatment assignment and the variables affecting it. When non-linear relationships and interactions are automatically taken into account (i.e. with the random forest) the effect of the treatment becomes much larger in magnitude, even in the placebo test. This may be influenced by the fact that, with this method, the propensity score for both groups is more polarised, and therefore the subset may include comparatively more treated individuals whose probability of receiving the treatment was lower. If the treatment is more effective for individuals "at the margin", this could have inflated the coefficients in both specifications, and therefore led to the observed difference in estimates.
 
+In addition, the fact that the coefficient of train is significant even in the placebo test suggests that the estimate of the treatment effect may be biased by the self-selection of subjects into the treatment or control group, implying that the identification strategy is not appropriate. The larger magnitude of the coefficient using the random forest may be due to existence of a non-linear relationship between the covariates and being in the treatment group, which may be driving the self-selection process.
 
 */
 	
