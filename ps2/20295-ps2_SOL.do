@@ -14,6 +14,7 @@ set more off
 
 /* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
 
+/*
 ssc install outreg2, replace
 ssc install estout, replace
 ssc install avar, replace
@@ -25,7 +26,6 @@ ssc install twowayfeweights, replace
 ssc install ftools, replace
 ssc install moremata, replace
 ssc install reghdfe, replace
-
 */
 
 /* For graphs & stuff */
@@ -66,13 +66,14 @@ if ("`user'" == "gabrielemole") {
 /*                      													*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps2/ps2_data/pset_2.dta", clear
 
 /* (a) Note that one of the variables in the data set is stpop, the state population. In the next exercises, you should follow Wolfers (2006) in weighting both your descriptive output and your analysis by the state population. A short summary of the different weighting procedures in Stata is provided here ([1,2]). Given that divorce rates are an average computed in each state and the variable stpop provides the population in each of these states, which is the weight you should use when reporting the evolution of divorce rates or a regression of divorce rates on unilateral divorce laws to match the analysis in Wolfers (2006)? */
 
 	/* A: 	Wolfers (2006) adopts a weighted least squared framework, using population weights for both descriptive analysis and computation of regression estimates. 
 	As the treatment variable, the number of divorces every 1000 people, is at the state level and div_rate is a state mean, we should follow  Dupraz (2013) and adopt the state population (stpop) as the analytical weights and robust standard errors with vce(robust). 
 	This procedure improves computational efficiency and would yield the same estimates as relying on "fweight" after correcting for proper standard errors. */
+	
 	
 /* (b) The article relies on the timing of the introduction of unilateral divorce laws to compare divorce rates in the two possible regimes. One of the assumptions of this analysis is that states with the previous divorce law and the ones that introduced unilateral divorce laws would both follow parallel trends in their divorce rates in the absence of the changes to the legislation. Create 2 different graphs to support this assumption: (i) the first graph should convey the same message as the one in Figure 1 of the original paper, comparing states that did not change their divorce laws during 1968 - 1988 (Friedberg's sample) and the ones that did; (ii) the second graph should perform the same description, but focusing on the simpler analysis we will perform in the next exercise: compare the states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000, only reporting the time trend up to 1978 and including a vertical line between 1968 and 1969 (when the first reforms in our sample started). Do your results support the assumption of parallel trends? */
 
