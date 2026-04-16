@@ -26,6 +26,7 @@ ssc install twowayfeweights, replace
 ssc install ftools, replace
 ssc install moremata, replace
 ssc install reghdfe, replace
+ssc install gtools, replace
 */
 
 /* For graphs & stuff */
@@ -70,9 +71,8 @@ use "https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps2
 
 /* (a) Note that one of the variables in the data set is stpop, the state population. In the next exercises, you should follow Wolfers (2006) in weighting both your descriptive output and your analysis by the state population. A short summary of the different weighting procedures in Stata is provided here ([1,2]). Given that divorce rates are an average computed in each state and the variable stpop provides the population in each of these states, which is the weight you should use when reporting the evolution of divorce rates or a regression of divorce rates on unilateral divorce laws to match the analysis in Wolfers (2006)? */
 
-	/* A: 	Wolfers (2006) adopts a weighted least squared framework, using population weights for both descriptive analysis and computation of regression estimates. 
-	As the treatment variable, the number of divorces every 1000 people, is at the state level and div_rate is a state mean, we should follow  Dupraz (2013) and adopt the state population (stpop) as the analytical weights and robust standard errors with vce(robust). 
-	This procedure improves computational efficiency and would yield the same estimates as relying on "fweight" after correcting for proper standard errors. */
+	/* A: The framework adopted in Wolfers (2006) relies on a population-weighted least squares model, both in the descriptive and the regression analysis. Since divorce rates are an average at the state level, following Dupraz (2013), we should use the state population (stpop) as analytical weights, together with standard errors robust to heteroskedasticity. Indeed, this would greatly improve computational efficiency while taking into account that the random unit, in this setting, is the state and not the individual.*/
+	
 	
 	
 /* (b) The article relies on the timing of the introduction of unilateral divorce laws to compare divorce rates in the two possible regimes. One of the assumptions of this analysis is that states with the previous divorce law and the ones that introduced unilateral divorce laws would both follow parallel trends in their divorce rates in the absence of the changes to the legislation. Create 2 different graphs to support this assumption: (i) the first graph should convey the same message as the one in Figure 1 of the original paper, comparing states that did not change their divorce laws during 1968 - 1988 (Friedberg's sample) and the ones that did; (ii) the second graph should perform the same description, but focusing on the simpler analysis we will perform in the next exercise: compare the states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000, only reporting the time trend up to 1978 and including a vertical line between 1968 and 1969 (when the first reforms in our sample started). Do your results support the assumption of parallel trends? */
@@ -90,8 +90,10 @@ preserve
 	collapse div_rate_tre div_rate_con, by(year)
 
 	gen div_rate_dif = div_rate_tre - div_rate_con
+	
 
-
+* Graph 1
+	
 	#delimit ;
 
 	graph set window fontface "Times New Roman";
@@ -102,11 +104,11 @@ preserve
 		(line div_rate_dif year, lcolor(black) lp(dash)) 
 		(function y = 0.2, range(1968 1988) lcolor(black) lpattern(solid) lwidth(medium))
 		,
-		xline(1968 1988, lp(solid)) //* might change the vertical lines 
+		xline(1968 1988, lp(solid)) 
 		ylabel(0(1)7, grid glstyle(solid))
 		yline(0, lp(solid))
 		xlabel(1956(2)1998, nogrid angle(45))
-		xmticks(1957(2)1999)
+		xmtick(1957(2)1999)
 		legend(
 			pos(12)
 			order(
@@ -125,12 +127,12 @@ preserve
 
 	#delimit cr
 
-	graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Graph_1.pdf", replace
+	graph export "$output/Graph_1.pdf", replace
 
 restore
 
 
-*Graph 2
+* Graph 2
 
 
 preserve
@@ -180,20 +182,19 @@ graph twoway
 
 #delimit cr
 
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Graph_2.pdf", replace
+graph export "$output/Graph_2.pdf", replace
 restore 
 
 
-	/* A: A preliminary analysis does not find a strong support for the parallel trend assumption (PTA). 
+	/* A: In both graphs, we can see that countries in the treatment group have higher divorce rates at the baseline. The trend in divorce rates in the two groups seems rather similar, even more so in graph 2, which at first might support the parallel trend assumption.
 
-Graph 2 shows that treated countries had higher baseline divorce rates compared to the control group. From a first graphical exploration control states and reform states seem to follow similar trajectories before the treatment. Yet the difference among the two groups increases over time, starting from 1.238 in 1956 and noticeably reaching 1.71 in 1968 (38% increase). While we observe a relevant rise of divorce rates in 1970, the outcome variable slowly congerges to the pre-treatment levels. 
+However, in both graphs we can observe a steady increase in the difference between the two groups, which may contradict the assumption. Indeed, it might simply be the case that, since treated states already had higher divorce rates in the first place, the reform simply freed up the marriages that could not break up under bilateral divorce laws that had been cumulating over the years.
 
-This can be explained in line with Wolfers (2006): there is a sort of endogeneity of treatment status, as treated countries already showed a tendency towards more divorces, and the reforms simply freed up the marriages that could not break up due to bilateral divorce laws. In other words the increase in the difference could be explained as a result of all the people who could not divorce previously to the reform and cumulated as a stock ready to be released. 
+Overall, it is not possible to determine a priori whether the parallel trends assumption is satisfied. To understand whether the increase in the difference between the two groups before the reform is statistically significant, one would have to carry out an event study or any other formal test. */
 
-Overall, we cannot clearly support the parallel trend assumptions as we do not rely on any formal test. There is an increasing difference among the control and treated states, yet we do not know whether this is statistically relevant.  
- */
+
 	
-/* INSTRUCTIONS: Let us now start an analysis of the effects of the introduction of unilateral divorce laws. As a first step, let us perform a 2-period difference-in-difference analysis using "long differences", focusing on the evolution of divorces between 1968 and 1978. Keeping only these 2 years in our sample, you should compare states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000. On this restricted sample, you should create: (i) a variable UNILATERAL equal to 1 if a state introduced the unilateral divorce law during this period (as signaled by variable lfdivlaw); (ii) a variable POST equal to 1 if the year is 1978; and (iii) a variable POST UNILATERAL when both POST and UNILATERAL are equal to 1. */
+/* Let us now start an analysis of the effects of the introduction of unilateral divorce laws. As a first step, let us perform a 2-period difference-in-difference analysis using "long differences", focusing on the evolution of divorces between 1968 and 1978. Keeping only these 2 years in our sample, you should compare states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000. On this restricted sample, you should create: (i) a variable UNILATERAL equal to 1 if a state introduced the unilateral divorce law during this period (as signaled by variable lfdivlaw); (ii) a variable POST equal to 1 if the year is 1978; and (iii) a variable POST UNILATERAL when both POST and UNILATERAL are equal to 1. */
 	
 /* (c) Now estimate the following regressions: */
 
@@ -214,16 +215,15 @@ preserve
 	/* (ii) A full Difference-in-Differences specification, including POST, UNILATERAL and POST UNILATERAL as regressors; */
 	
 	reg div_rate POST UNILATERAL POST_UNILATERAL [aweight = stpop], vce(robust)
-	
-	*extra 
-	
-	reg div_rate POST UNILATERAL POST*UNILATERAL [aweight = stpop], vce(robust)
 
 	
 	/* (iii) Based on the graphs you created in section (a), could you say something about the difference in the coefficients from regressions (i) and (ii)? What is the effect of introducing unilateral divorce laws according to this analysis? */
 
-		/* A: Graph 2 showed that baseline level of divorce rate in treated group is higher than control group. Hence regression i) overestimates the treatment effect as it does not control for group fixed effect. The Pooled estimate simply computes the difference between treated and control group in the time after the treatment has been introduced. 
-		After controlling for group fixed effect through the UNILATERAL dummy the estimated treatment effect of IMP_UNILATERAL in regression i) (1.70 and statistically significant at every conventional level) disappears. The estimated coefficient for regression ii) is negative but very close to 0 (-.005) and statistically insignificant. Thus, this first analysis would provide evidence against the hypothesis that the introduction of unilateral divorce laws increased divorce rates, assuming that the parallel trend assumption holds.*/
+	/* A: Regression 1 does not control for the initial differences between the groups: however, graphs 1 and 2 clearly display a difference in the baseline divorce rates, which is not being taken into account here. When including UNILATERAL as a regressor, indeed, the estimated treatment effect changes both in size and magnitude, moving from 1.7 to -0.005. Moreover, the effect goes from being statistically significant at any conventional level to not being significant at all.
+
+Hence, this analysis would suggest that introducing unilateral divorce laws did not cause an increase in divorce rates, provided that the parallel trends assumption holds.*/
+	
+	
 	
 /* (d) Generate a 3 by 3 matrix with row and column labels as follows: SEE PS2 
 Difference 1 should show differences across columns while Difference 2 across lines. Complete this matrix with the averages of div rate, replicating the results you have found in the previous regression. Then, export the matrix to an Excel table named TABLE 1.*/
@@ -262,7 +262,9 @@ Difference 1 should show differences across columns while Difference 2 across li
 	matrix rownames table_1 = POST=1 POST=0 Difference_1
 
 	matrix list table_1
-	putexcel set "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/table_1.xlsx", replace
+	
+	putexcel set "$output/Table_1.xlsx", replace
+	
 	putexcel A1=matrix(table_1), names
 	putexcel C1:C4, border(right)
 	putexcel A3:D3, border(bottom)
@@ -297,12 +299,14 @@ restore
 
 	/* (iv) Interpret the results of all 3 regressions. Can you think of a reason for the results to change across specifications? Under which assumption should these results be the same? */ 
 	
-	/* A: Across all specification the estimated coefficient for IMP_UNILATERAL should yield the average treatment effect of the introduction of unilateral divorce laws on divorce rates, provided the parallel trend assumption is met. Regression i) estimates a model controlling for both time invariant state fixed effects and time variant effects that are common to all states. This is obtained by adding state and time dummies. The estimated coefficient is -0.05 and statistically insignificant. This supports the hypothesis of a null treatment effect that we found also in the previous simple analysis.
-	
-Yet as we add a state specific linear trend in regression ii) the estimated coefficient for IMP_UNILATERAL increases to 0.477 and becomes statistically significant at every conventional level of significance. After adding quadratic state specific trends in regression iii) the coefficient slightly decreases to 0.334 while remaining statistically significant at every conventional level of significance. The estimates show a comparable behavior to Friedberg (1998), where controlling for state specifice trends found a positive effect of the divorce law, differently from the the null effect found in the baseline specification. Because the coefficients change over time the estimated coefficients seem to suffer from omitted variable bias due to different trends among the subgroups that are correlated with the divorce rate. 
+	/* A: Assuming that the parallel trends assumption holds, in all the specifications of the regression the coefficient of IMP_UNILATERAL represents the average treatment effect of the introduction of unilateral divorce laws on divorce rates.
 
-This bias is less prominent after controlling for state specific quadratic time trends. Compared to Friedberg (1998) we rely on a wider dataset. Overall these result seem to provide evidence that it is unlikely that the parallel trend assumption holds. Indeed, the estimated coefficients should be the same in all specifications provided control and treatment follow the same trends, which seems not to be the case.  
-	*/
+The first specification, controlling for time-invariant state fixed effects and time variant effects shared across states, supports the findings in the previous analysis: the point estimate is -0.055 and is not statistically significant, implying that the treatment effect is null.
+
+The second specification, including state-specific linear time trends, however, yields different results: the coefficient increases to 0.477 and becomes statistically significant at every conventional level. This result mirrors closely the findings of Friedberg (1998), where the baseline specification suggested no change in divorce rates, while the regression controlling for state-specific linear trends implied a positive and significant effect. Such a dramatic change might suggest that the baseline specification suffers from omitted variable bias, where the divorce rate is correlated with different trends among the subgroups.
+
+Finally, the third specification – controlling for state-specific quadratic time trends – leads to similar estimates: the coefficient remains positive (0.334) and statistically significant, similarly to Friedberg's results. Overall, since the estimates of the average treatment effect change so drastically after accounting for state-specific time trends, it seems to be the case that the parallel trends assumptions does not hold in this specific setting. */
+	
 	
 
 /* (f) In our current case study, unilateral divorce laws have been introduced subsequently in different states at different points in time. In such cases, we say that there was a staggered implementation of the treatment. Regressions with a single coefficient, as the ones performed in exercise e), may be biased in this setting. Let us now check some of the properties of these regressions. We will create a simulated data set of 3 periods and 2 states, where one state receives a treatment in the 2nd period and the other state only receives it in the 3rd period. The code below reproduces this simulation: */
@@ -349,7 +353,11 @@ preserve
 	reg Y4 i.state##i.year D, vce(robust)
 restore
 	
-		/* A: Only the first regression consistently estimates the average treatment effect: the estimated coefficient is 0.056 and statistically significant at the 5% level. In all remaining regressions the estimated coefficient for the treatment dummy becomes negative, though statistically insignificant. This can be explained by the way the simulated data have been created. "Y" includes only a fixed efect and a year effect, while following simulated outcomes include a time varying and state specific effect on the outcome that is not accounted by the regression specification we adopted. Indeed, if we control for state specific time effects in the specification (as in the extra section) the estimates for treatment are close to the "true" values of 0.05. Hence, due to the staggered implementation of the treatment the estimated regressions include a downard bias that is increasing depending on the magnitude of the state and year specific effect. This because the treatment effect is "masked" by the state and time specific effect of state 2 in year 3 that might be due either to specific changes in state 2 at year 3 or by heterogeneous treatment effects.   */
+		/* A: No, only the first specification delivers a consistent estimate of the average treatment effect. Indeed, we can observe a great difference between the estimate given by the first regression and the others: the former is positive (0.057) and statistically significant at the 5% level, while the others are negative and not significantly different from zero at any conventional level.
+
+The likely reason for this is the construction of the simulated data itself: the variable "Y" only includes a year fixed effect, whereas the others have a time-varying, state-specific effect that cannot be controlled for in the adopted specification. In fact, once the construction of the variables is taken into account (in the additional regressions above), the estimated average treatment effect resembles the one obtained using "Y" as the outcome variable, implying that the previous estimates were downward biased due to the omitted variables. */
+
+
 	
 /* (g) Use the Stata package "twowayfeweights" (or its R version, "TwoWayFEWeights"), based on De Chaisemartin and d'Haultfoeuille (2020), to estimate the weights attached to the regressions you estimated before. Can you explain why the sign of the estimated effect has changed between the regression on Y and the one on Y4? */
 
