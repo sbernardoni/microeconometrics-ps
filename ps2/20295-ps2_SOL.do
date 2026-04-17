@@ -44,8 +44,8 @@ if ("`user'" == "erick") {
 }
 
 if ("`user'" == "Sara") {
-    global filepath "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1"
-	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps1\ps1_output"
+    global filepath "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps2"
+	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps2\ps2_output"
 }
 
 if ("`user'" == "flore") {
@@ -57,8 +57,8 @@ if ("`user'" == "flore") {
 
 
 if ("`user'" == "gabrielemole") {
-    global filepath "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1"
-	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps1\ps1_output"
+    global filepath "C:\Users\Stealth\Desktop\microeconometrics-ps\ps2"
+	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps2\ps2_output"
 }
 
 *=============================================================================
