@@ -354,16 +354,20 @@ restore
 
 	/* A: The code was executed in part f).
 	
-	De Chaisemartin and d'Haultfoeuille (2020) show that in a fixed effect design with staggered implementation and heterogeneous treatment effects the fixed effect estimator β_fe for the treatment effect could be decomposed as the expectation of a weighted sum of the Δg,t terms, namely the average treatment effect in group g and period t coming from all pairwise difference in differences. The issue is that weights can assume negative values, yielding a downward bias and possibly leading to estimated negative treatment effect even if the average treatment effects on the treated are all positive. Negative weights arise as a result of relying on Difference in Differences where in some cases the control group is already treated due to staggered treatment adoption. 
+	De Chaisemartin and d'Haultfoeuille (2020) show that in a staggered treatment design with heterogeneous treatment effects, the two-way fixed effects (TWFE) estimator β_fe can be decomposed as the expectation of a weighted sum of group-period average treatment effects Δg,t, coming from all pairwise difference in differences. The key problem is that some of these weights can be negative, which introduces a downward bias and may even produce a negative estimated coefficient when all true ATTs are positive. Negative weights arise because, under staggered adoption, some 
+	units that serve as controls are themselves already treated, undermining the standard DiD logic.
 
-This is the situation that seems to happen in this case, where the treatment adoption is staggered. The twowayfeweights command show that the estimated β_fe is a result of a weighted sum where a negative weight is present. De Chaisemartin and d'Haultfoeuille (2020) show that it is more likely to assign negative weights to periods where a large fraction of groups are treated, and to groups treated for many periods, which in our case is period 3 and for state 2, that is the one starting treated from period 2. This was also the component that influenced the bias in the previous regressions. Thus a plausible explanation of the estimated negative coefficient for β_fe is that the negative weighted ATE_2,3 overcompensates the positive contributions of the other ATEs, and that the ATE_2,3 increases depending on the effect of the specific changes in state 2 at year 3, thus explaining why estimated coefficients get smaller from regression on Y2 to Y4.
-
-This situation aligns with the example the authors provide in their paper. They showed that under the error decomposition
-εg,t = Dg,t − Dg,. − D.,t + D.,. ,
-(where εg,t is the residual error to compute the weights, Dg,t the treatment status dummy, Dg, the average treatment status of the group, D.,t, the average treatment status at that time, and D.,. the average treatment status overall), the weight given to the average treatment effect of Δ2,3 is negative. In addition to this, decomposing the fixed effects estimator as β_fe = (DID1 + DID2)/2 they show that bias arises from the second difference in differences:
-DID2 = E[Δ1,3] − (E[Δ2,3] − E[Δ2,2]).
-Greater increases in E[Δ2,3] − E[Δ2,2] bias downward the β_fe, which explains why bigger increases in the effect at year 3 for state 2 leads to higher biases. 
+	This is precisely what appears to occur here. The twowayfeweights output confirms that β_fe is a weighted combination that includes at least one negative weight. As the authors note, negative weights are more likely to be assigned to periods where many groups are treated and to groups treated for a long time — in this simulation, period 3 and state 2 
+	(which enters treatment already in period 2). These are exactly the observations that drove the bias in the earlier regressions.
 	
+	A plausible explanation for the negative coefficient in the regression on Y4 is that the negatively-weighted ATE at (state 2, period 3) grows large enough to outweigh all the positive contributions, flipping the sign of β_fe. Since the outcome Y4 assigns a coefficient of 0.5 to the (state 2, period 3) cell — larger than the 0.3 and 0.4 used 
+	in Y2 and Y3 — the downward bias compounds as we move from Y to Y4.
+
+	This is consistent with the analytical example in De Chaisemartin and d'Haultfoeuille (2020). Using the residual decomposition 
+		εg,t = Dg,t − Dg,. − D.,t + D.,.
+(where εg,t is the residual error to compute the weights, Dg,t the treatment status dummy, Dg, the average treatment status of the group, D.,t, the average treatment status at that time, and D.,. the average treatment status overall) the authors show that the weight on Δ2,3 is negative. Decomposing β_fe as (DID1 + DID2)/2, the bias operates through
+		DID2 = E[Δ1,3] − (E[Δ2,3] − E[Δ2,2]):
+larger values of E[Δ2,3] − E[Δ2,2] push β_fe downward, which is why the estimated effect becomes increasingly negative across Y2, Y3, and Y4.
 	*/
 	
 /* (h) Let us now revisit our analysis following Wolfers (2006). We will do this based on the decomposition proposed by Goodman-Bacon (2021). The author provides commands in both Stata and R for his decomposition. To install it in Stata, run the code below: */
@@ -390,16 +394,17 @@ preserve
 	
 		bacondecomp div_rate IMP_UNILATERAL [aweight = init_stpop], robust  mcolors(blue red green)
 	graph rename bacondecomp22
-	graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Bacon_decomposition_graph.pdf", replace
+	graph export "$output/Bacon_decomposition_graph.pdf", replace
 restore
 	
-	/* Goodman-Bacon (2021) provides a decomposition of the twoway Difference in Differences estimator (TWFEDD) in case of staggered treatment as the weighted average of all possible 2x2 two group two periods DiD estimators. These differ by the adopted control group: as a group might change treatment status over time, every DiD can either have as control group an always treated group, a never treated group, or timing groups, namely groups whose treatment stated at different times is used as other's controls groups.
-	The weights given to the 2x2 DiD depend on the timing group sizes and the variance of the treatment dummy in each pair, which tends to be higher in observations in the middle of the panel. With time-invariant treatment effect the estimator returns an average of cross-group treatment effects where weights depend on the variances and are all positive. In case of heterogeneous treatment effect, negative weights are a result of adopting already-treated units as controls, where the treatment effect might change over time but is subtracted in the pairwise DiD. The authors point out that this does not violate the parallel assumption per se but underscore the need for caution when using the TWFEDD estimator. They suggest the adoption of different strategies, namely event studies, stacked
-DD or reweighting estimators. 
-	The authors show that the probability limit of the TWFEDD Estimator can be decomposed into the variance-weighted average treatment effect on the treated (VWATT), the so called `variance-weighted common trends'(VWCT), and the the weighted sum of the change in treatment effects within each timing group before and after a later treatment time (deltaATT). The VWCT is assumed to be equal to zero, an assumption called pairwise common trends assumption. Thus, when time-varying treatment effects arise, deltaATT is non-null and biases the estimate while yielding negative weights. 
-
-Plotting the Bacon decomposition for our sample we notice that the assigned weights are all positive as every observation is on the right hand side of the y axis. The estimated coefficient for IMP_UNILATERAL is negative and thus is likely due to a slight predominance of negative estimated average treatment effects in pairwise difference in differences. The large majority (.88) of weights is given to never treated units used as control groups, while "timing groups" and "always treated" units are given weights close to 0. Because already-treated units are usually the most likely source of negative weights but here has negligible importance, this seems to rule out issues with negative weighting. 
-*/
+	/* Goodman-Bacon (2021) decomposes the TWFE DiD estimator under staggered treatment into a variance-weighted average of all possible 2×2 DiD comparisons. Each pairwise DiD is formed between two groups and two time periods, and they differ in what serves as the control group: units that are never treated, units that are  always treated, or "timing groups" — units treated at a different time that temporarily serve as controls for one another.
+	
+	The weights attached to each 2×2 DiD depend on the size of the groups involved and the within-pair variance of the treatment indicator, which tends to be largest for groups treated near the middle of the panel. When treatment effects are constant over time, all weights are given a positive value depending on the variance and the estimator recovers an average of cross-group treatment. When treatment effects are heterogeneous, however, using already-treated units as controls can produce negative weights, since their potentially evolving treatment effects get subtracted from the comparison. The authors stress that this does not violate the parallel trends assumption per se, but it does mean the TWFE coefficient can be a misleading statistic. They recommend complementary strategies such as event studies, stacked DiD, or reweighting estimators.
+	
+	More formally, the probability limit of the TWFE estimator decomposes into the variance-weighted average treatment effect on the treated (VWATT), the variance-weighted common trends term (VWCT, assumed to equal zero under pairwise parallel trends), and a term ΔATThat captures within-cohort changes in treatment effects over time. When treatment effects evolve, this last term is non-zero and biases the estimate, which is when negative weights can appear.
+	
+	In our sample, the Bacon decomposition graph shows all estimated weights are positive — every point lies to the right of the y-axis. The negative TWFE coefficient for IMP_UNILATERAL is therefore likely driven by a concentration of negative 2×2 DiD estimates, rather than by negative weights per se. The vast majority of the total weight (approximately 88%) is allocated to never-treated units used as controls, while timing groups and always-treated units receive near-zero weight. Since already-treated controls are the main source of negative weighting in theory, and their role here is negligible, the decomposition does not point to a negative-weights problem in this application.
+	*/
 	
 /* (i) Let us now perform an event-study regression, allowing for the unilateral divorce law coefficients to vary across time. Your analysis will follow table 2 in Wolfers (2006). We will have the period right before the introduction of the law as our basis of comparison, creating dummies for leads and lags for all other distances between our observation period and the law introduction in that state. This means that for any time period t and state s, the dummy Dτ st will be equal to one if in that specific period, state s has introduced unilateral divorce laws τ years before. Following the analysis in the main paper, we will set 
 	
@@ -411,10 +416,11 @@ That is, the dummy will be equal to one for all observations with 15 or more yea
 	
 So that this dummy will equal 1 for all observations 10 or more years before the introduction of the unilateral divorce law in that state. Notice that this specification has some deviations from the one performed in table 2 of the original paper. */
 
-	/* (i) Run the regresson below, using the unilateral divorce dummies Dτ st you created and sector (πs) and year (γt) fixed effects. */
+	/* (i) Run the regresson below, using the unilateral divorce dummies Dτ st you created and state (πs) and year (γt) fixed effects. */
 	
 preserve
-	use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
+	use "https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps2/ps2_data/pset_2.dta", clear
+
 
 	encode st, generate(state)
 	keep if year >= 1956 & year <= 1988
@@ -453,32 +459,35 @@ preserve
 
 	reghdfe div_rate lead* lag* [aweight = stpop], absorb(i.year i.state) cluster(state)
 	estimates store reg_simple
-	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg1.xlsx", title("regression ex i point i") label excel replace
+	outreg2 using "$output/Reg1.xlsx", title("regression ex i point i") label excel replace
 
 		
 		/* (ii) Perform the same regression as the one described above, now including state-specific linear time trends. */
 		
 	reghdfe div_rate lead* lag* time_trend_* [aweight = stpop], absorb(i.year i.state) cluster(state)
 	estimates store reg_timetrend
-	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg2.xlsx", title("regression ex i point ii") label excel replace
+	outreg2 using "$output/Reg2.xlsx", title("regression ex i point ii") label excel replace
 
 		
 		/* (iii) In addition to state-specific linear time trends, include also quadratic state-specific time trends. */
 		
 	reghdfe div_rate lead* lag* time_trend_* timetrend_square_* [aweight = stpop], absorb(i.year i.state) cluster(state)
 	estimates store reg_sqtime
-	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg3.xlsx", title("regression ex i point iii") label excel replace
+	outreg2 using "$output/Reg3.xlsx", title("regression ex i point iii") label excel replace
 
 
 	
 	/* (iv) Interpret the results of all 3 regressions. What can we see in the behaviour of divorce rates through this analysis that was not possible in the single coefficient analysis? */
 	
-*The event study regressions offers a clearer perspective on the changing effects of unilateral divorce laws compared to the findings and analysis of question (e). 
-*In particular, it is clear that right after the reform is implemented, divorce rates experience a positive and statistically significant increase. The first two post-reform years show statistically significant increases, suggesting that the laws had an immediate effect. The interpretation of this phenomenon is clear: when divorce became easier to obtain, all those couples that were under strain, were finally able to divorce. The effects become not statistically different from zero after the third year. This shows a slight short run increase of divorce rates, that is very short lived. 
-*Before the legal reform, coefficients were small and statistically insignificant. This is important to note because it points towards the fact that, without the reform, divorce rates in treated and untreated states were similar. In the longer run, it appears like divorce rate decreases after the ninth year after the introduction of the law. This result is not robust to the introduction of the linear and quadratic terms. 
-*When introducing state-specific linear trends, the effect appears to remain for longer, with it staying positive until after 5 years from the introduction of the unilateral divorce law. This is in line with the fact that, if states were on different trajectories before the introduction of the law, not including the time trends might bring to wrongly estimating the impact. 
-*When including also the quadratic time trends, we see a short lived increase in the divorce rates , that quickly fades at the third year. These results are similar to the ones found in the simple regression without the linear trends.  
-*However it is important to note that most coefficients remain statistically insignificant. In fact, only few coefficients of early post-treatment years show robust effects, and these become less precise as we control for linear and quadratic trends. This points towards the fact that there might be a real short-run response, but long-term effects are negligible or too noisy to detect confidently.
+	/* The event-study regressions provide a richer picture of how divorce rates responded to the reform than the single-coefficient specifications in exercise (e). 
+Across all three specifications, the pre-reform lead coefficients are small and statistically indistinguishable from zero. This supports the parallel trends assumption: absent the law change, treated and untreated states appear to have been on comparable trajectories. In the simple specification (no time trends), divorce rates rise sharply and significantly in the first two years after adoption — a plausible "pent-up demand" effect, as couples who had long wished to divorce were suddenly able to do so. 
+Beyond the third post-reform year, coefficients become statistically insignificant, and there is a suggestion of a decline after year nine, though this is not robust to the inclusion of the linear and quadratic terms.
+
+Adding state-specific linear trends extends the duration of the positive post-reform effect to roughly five years. This is consistent with the fact that if states were already on diverging trajectories before adoption, omitting trends would cause the regression to understate the true short-run response.
+
+When quadratic trends are also included, the pattern reverts to a short-lived spike that dissipates by the third post-reform year, broadly resembling the simple specification.
+
+Across all three models, most coefficients remain statistically insignificant. Only a handful of early post-treatment estimates are robustly positive, and precision declines as linear and quadratic trends are added. The overall picture is likely suggesting a genuine but transitory short-run response, with no strong evidence of a lasting effect on divorce rates. */
 
 
 /* (j) Use the Stata command coefplot (or any other command of your choosing) to create a graph reporting the coefficients and the 95% confidence intervals of your 3 event-study regressions. */
@@ -499,11 +508,13 @@ coefplot ///
     ytitle("Coefficient") ///
     title("Event-Study Estimates with 95% Confidence Intervals") ///
     vertical
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/event_study_regression.pdf", replace
+graph export "$output/event_study_regression.pdf", replace
 
 /* (k) Wolfers (2006) presents a summary of the debate regarding the influence of the unilateral divorce law in the divorce rates. How do the conclusions of the paper differ from Friedberg (1998)? How does the author rationalize the difference in his findings? */
 
-*Wolfers (2006) differs from Friedberg (1998) in both conclusions and interpretation. While Friedberg finds that unilateral divorce laws account for about one-sixth of the rise in divorce rates since the late 1960s, Wolfers argues that her results may confound preexisting trends with the effects of the policy. Wolfers finds that although divorce rates rise sharply after the adoption of unilateral divorce laws, this increase is not persistent. In fact, about 15 years later, early adopters tend to have lower divorce rates. He rationalizes the difference by highlighting that Friedberg's analysis may not adequately separate dynamic policy effects from underlying state-specific trends.
+	/* Wolfers (2006) and Friedberg (1998) reach substantially different conclusions. Friedberg finds that unilateral divorce laws account for roughly one-sixth of the rise in divorce rates observed since the late 1960s, implying a persistent and sizeable effect. Wolfers, by contrast, argues that this estimate conflates the policy's true impact with pre-existing, state-specific trends in divorce behavior.
+
+	Wolfers documents that divorce rates do increase sharply immediately after adoption, but that this effect is short-lived: early adopters tend to show lower divorce rates approximately 15 years after the reform. He rationalises the discrepancy by arguing that Friedberg's specification does not adequately control for underlying state-level dynamics, causing her single-coefficient DiD estimate to absorb trend differences that predate or are unrelated to the legislative change.*/
 
 /* (l) Several different procedures to estimate a staggered Difference-in-Differences analysis have been proposed recently. Let us now perform one of these procedures. You will use command eventstudyinteract in Stata, based on Sun and Abraham (2021) 
 
@@ -515,14 +526,14 @@ drop timetrend_square_*
 *simple
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) absorb(i.year i.state) vce( cluster state)
 estimates store reg_interact_simple
-outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg4.xlsx", title("regression ex l 1") label excel replace
+outreg2 using "$output/Reg4.xlsx", title("regression ex l 1") label excel replace
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
 matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Simple Event Study") xlabel(, alternate)
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/interact_simple.pdf", replace
+graph export "$output/interact_simple.pdf", replace
 
 *linear time trends
 
@@ -534,7 +545,7 @@ local lineartime time_trend_*
 
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) covariates(`lineartime') control_cohort(no_law) absorb(i.year i.state ) vce(cluster state)
 estimates store reg_interact_linear
-outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg5.xlsx", title("regression ex l 2") label excel replace
+outreg2 using "$output/Reg5.xlsx", title("regression ex l 2") label excel replace
 *graph
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
@@ -542,10 +553,9 @@ matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Event Study with Linear Time Trends") xlabel(, alternate)
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/interact_linear.pdf", replace
+graph export "$output/interact_linear.pdf", replace
 				
 *squared time trends
-
 
 forval i=1/51{
 	bysort state (year): gen timetrend_sq_`i'=_n^2 if state==`i'
@@ -555,7 +565,7 @@ local squaretrend timetrend_sq_*
 
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) covariates(`lineartime' `squaretrend') absorb(i.year i.state) vce(cluster state)
 estimates store reg_interact_squared
-outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg6.xlsx", title("regression ex l 3") label excel replace
+outreg2 using "$output/Reg6.xlsx", title("regression ex l 3") label excel replace
 
 *graph
 
@@ -565,11 +575,12 @@ matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Event Study with Square Time Trends") xlabel(, alternate)
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/final_graph.pdf", replace
+graph export "$output/final_graph.pdf", replace
 				
 restore
 				
-*In Sun and Abraham (2021) the following is discussed: with heterogenous treatment effects, standard event-study coefficients are not able to capture the dynamic treatment effects. So, with the eventstudyinteract command, the estimators are "interaction-weighted": at first, the CATT (Cohort-specific Average Treatment effect on the Treated) is estimated , then the CATT estimates are averaged across cohorts at a given relative period. These estimators are robust to heterogeneous treatment effects. 
+	/* Sun and Abraham (2021) address a core limitation of standard event-study regressions: under heterogeneous treatment effects, the coefficients on lead and lag dummies are contaminated by treatment effects from other cohorts and periods, rather than cleanly identifying the effect at each relative time.
+	
+The eventstudyinteract command resolves this through an interaction-weighted (IW) estimator. In a first step, it estimates cohort-specific average treatment effects on the treated (CATTs) for each adoption cohort separately. In a second step, it aggregates these CATTs across cohorts at each relative period, weighting by cohort shares. Because the CATTs are estimated within-cohort, the resulting estimates are robust to treatment effect heterogeneity across both cohorts and time.
 
-*Comparison with the results from the original paper:
-*In general, the results found in this exercise are in line with what was found by the original paper, so in both cases what has been found is a short run increase in the divorce rates in the first years after the introduction of the unilateral divorce laws. After a couple of years, the effect becomes insignifcantly different from zero. When adding squared time trends, there is an unusual output. In particular, ten years before the introduction of the law, there is a significantly positive effect, that then is zero for most of the other time periods analyzed, and it becomes significantly negative after the eleventh period after the introduction of the law. 
+Comparing our results to Wolfers (2006): the simple and linear-trend specifications reproduce the paper's main finding — a positive short-run effect in the first few years after adoption that fades toward zero within a few years. The quadratic-trend specification yields an anomalous pattern, with a significantly positive pre-trend coefficient ten years before adoption and a significantly negative coefficient beyond year eleven post-adoption, which might reflect over-fitting from the high-dimensional set of quadratic state trends rather than a genuine economic dynamic.
