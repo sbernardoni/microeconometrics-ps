@@ -4,80 +4,80 @@ author: "Florens Schlosser"
 format: html
 knitr:
   opts_knit:
-    root.dir: "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_e2"
+    root.dir: "C:/Users/flore/OneDrive/Documents/Bocconi/Year 2/Microeconometrics/PS 2"
 ---
 
-# Exercise 2
+# Problem Set 2 - Exercise 2
 
-------------------------------------------------------------------------
+-----------------------------------------------------
 
-We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
+> We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
 **Setup**
 
 ```{r}
-#| label: Load the relevant libraries
+#| label: Libraries
 
-# For this assignment specifically
+# grf package for random forests
 library(grf)
 
-# For fancy plots
-library(ggthemes)
-library(viridis)
-library(gridExtra)
-
-# Packages related to tidyverse, for data manipulation
-library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
-library(tinytex)
-library(fastDummies)
-library(stargazer)
-
-# To handle time changes
+# Necessary in case of time changes
 library(timechange)
 
-# To solve conflicts
+# Necessary in case of conflicts
 library(conflicted)
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::lag)
 
-# IMPORTANT: run twice to solve the errors
+# Data stuff
+library(tidyverse) 
+library(tinytex)
+library(fastDummies)
+library(stargazer)
+
+# plots
+library(ggthemes)
+library(viridis)
+library(gridExtra)
+
 ```
 
-## Question 2(a)
+## Exercise 2(a)
 
 > Structure your data set accordingly to assess whether the introduction of the unilateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf.
 
 ```{r}
-#| label: Cleaning and fixing dummies
+#| label: Data prep
 
-# Load the expanded county-level panel data
-data_url <- "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"
-df <- read.csv(data_url)
+# Use "expanded_data.csv"
+data_path <- "C:/Users/flore/OneDrive/Documents/Bocconi/Year 2/Microeconometrics/PS 2/files/expanded_data.csv"
+df <- read.csv(data_path)
 
-# Create a binary indicator for rural counties: 1 if urbanization=="Rural", 0 otherwise
+# Rural dummy: 1 if urbanisation=="Rural", 0 else
 df$urbanization_dummy <- as.numeric(df$urbanization == "Rural")
 
-# Encode each state label as a unique integer ID (factor levels are assigned alphabetically)
+# Assign factor labels to each state for identification
 df$state_id <- as.numeric(as.factor(df$st))
 
-# Define the treatment dummy
+# Initialise UNILATERAL variable (= 1 if divorce laws were introduced 1969-1973)
 df <- df %>%
   mutate(
     treated = ifelse(lfdivlaw >= 1969 & lfdivlaw <= 1973, 1, 0)
     )
 ```
 
-After defining correctly all of our covariates of interest, we define the difference in the divorce rate between 1978 and 1968 and create the final dataset.
 
 ```{r}
-#| label: Turning the data into first differences
+#| label: Calculate first differences
 
+# calculate change in the simulated divorce rate between 1968 and 1978 per state
 df <- df %>% 
   arrange(state_id, county_id, year) %>%
   group_by(state_id) %>% 
-  mutate(div_rate_diff = div_rate_sim - lag(div_rate_sim)) %>%        # Compute year‑to‑year change in simulated divorce rate:
-  ungroup()                                                           # Remove grouping so downstream code isn’t accidentally state‑wise
+  mutate(div_rate_diff = div_rate_sim - lag(div_rate_sim)) %>%        
+  ungroup()                                         
 
+# extract baseline-year data (1968)
 baseline_df <- df %>%
   filter(year == 1968) 
 
@@ -85,24 +85,22 @@ diff1978_df <- df %>%
   filter(year == 1978) %>%
   select(state_id, county_id, div_rate_diff)
 
-# Merge the baseline covariates with the first difference variable.
+# merge 1968 observations with first-diff variable
 final_df <- left_join(baseline_df, diff1978_df, by = c("state_id", "county_id"))
-
-# I don't really understand how we created the .x and .y divorce rate variables -> STICK TO THE Y VERSION, IT IS CORRECT
 
 head(final_df)
 ```
 
-After fixing the dataset, we define the variables of interest as per the tutorial:
+From this dataset, we can now collect the variables of interest for the causal forest, which we will call Y, W, and X:
 
--   **Y**: Outcome, *i.e.* first difference in the divorce rate
+- **Y**: The outcome variable, in our case first diffs of the divorce rate.
 
--   **W**: Treatment, *i.e.* a dummy taking values 1 if a divorce law was implemented between 1968 and 1973 (as per point 1.c, see STATA) and 0 otherwise.
+- **W**: The treatment variable, a dummy taking value 1 if the divorce law was implemented between 1968 and 1973 and value 0 else.
 
--   **X**: Covariates
+- **X**: Covariates (selected population and county characteristics)
 
 ```{r}
-#| label: Defining the variables of interest
+#| label: Causal forest setup
 
 outcome <- final_df$div_rate_diff.y
 
@@ -127,7 +125,7 @@ covariates <- subset(final_df,
 We can now estimate the causal forest
 
 ```{r}
-#| label: Estimating the causal forest
+#| label: Causal forest implementation
 
 tau.forest <- causal_forest(covariates,
                     outcome, 
@@ -151,9 +149,10 @@ ranked.vars <- order(varimp, decreasing = TRUE)
 colnames(covariates)[ranked.vars[1:5]]
 ```
 
-> If the output of the causal_forest method doesn’t pass a sanity check based on your knowledge of the data, it may be worth checking whether the overlap assumption is violated. In order for conditional average treatment effects to be properly identified, a dataset’s propensity scores must be bounded away from 0 and 1. A simple way to validate this assumption is to calculate the propensity scores by regressing the treatment assignments W against X, and examining the out-of-bag predictions. Concretely, you can perform the following steps:
+In the following, we conduct a quick sanity check of the causal forest based on the overlap assumption. For this, we regress treatment assignment on the covariates and look at the resulting distribution of propensity scores. It is important that the distribution of propensity scores is concentrated away from 0 and 1 so that we can reasonably assume that no part of the population is systematically excluded from treatment. 
 
 ```{r}
+# regress treatment on covariates
 propensity.forest = regression_forest(covariates, treat) 
 W.hat = predict(propensity.forest)$predictions
 
@@ -161,41 +160,44 @@ hist_df <- data.frame(propensity = W.hat)
 
 ggplot(hist_df, aes(x = propensity)) +
   geom_histogram(
-    binwidth   = 0.01,           # adjust bin width to taste
-    fill       = "steelblue",    # nice solid fill color
-    color      = "white",        # border color between bins
-    alpha      = 0.8             # slight transparency
+    binwidth   = 0.01,           
+    fill       = "darkgreen",    
+    color      = "white",        
+    alpha      = 0.8             
   ) +
   labs(
-    title = "Distribution of Propensity Scores",
-    x     = "Propensity Score",
+    title = "Distribution of propensity scores",
+    x     = "Propensity score",
     y     = "Count"
   ) +
-  theme_minimal() +              # clean, uncluttered look
+  theme_minimal() +              
   theme(
     plot.title   = element_text(hjust = 0.5, size = 16, face = "bold"),
     axis.title   = element_text(size = 14),
     axis.text    = element_text(size = 12)
   )
+ggsave(
+  filename = "2(a) distribution of propensity scores.png",
+  width = 7,
+  height = 5,
+  dpi = 300
+  )
 ```
 
-> If there is strong overlap, the histogram will be concentrated away from 0 and 1. If the data is instead concentrated at the extremes, the overlap assumption likely does not hold.
+As we do not observe a concentration in the distribution of the propensity scores at 0 or 1, we can consider the whole, unadjusted sample when calculating the CATE.
 
-Our histogram appears to be balanced, we will hence proceed to take into account the whole sample (`target.sample = "all"`) when calculating the CATE
+(a)(i)  **What is the estimated average treatment effect in this instance?**
 
-> For further discussion of the overlap assumption, please see Imbens and Rubin (2015). In practice, this assumption is often violated due to incorrect modeling decision: for example one covariate may be a deterministic indicator that the example received treatment.
+We estimate a Conditional Averate Treatment Effect of `r cate[1]`. Its variance is `r cate[2]``.
 
-1.  **What is the estimated averate treatment effect in this instance?**
+(a)(ii)  **Is it consistent with your answer in exercise 1(c)?**
 
-The estimate for the Conditional Averate Treatment Effect is equal to `r cate[1]`, with a variance of `r cate[2]``.
+The estimated positive effect is small with a large standard error. In this sense, the results of this exercise are consistent with our findings in exercise 1(c). In both cases, our analysis does not point towards an increasing effect of unilateral divorce laws on divorce rates (in the first decade after adoption), relative to the group of comparison.
 
-2.  **Is it consistent with your answer in exercise 1.c?**
+## Exercise 2(b)
 
-Our results are consistent with the conclusions of exercise 1.c, as both approaches indicate that allowing unilateral divorce did not raise divorce rates in the first decade after adoption; the point estimates are small and imprecise
-
-## Question 2(b)
-
-Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
+> Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on (i) the Best Linear Projection; (ii) the Targeting Operator Characteristic; (iii) Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
+Explain what is being performed in each point and interpret your output.
 
 ### 2(b)(i) The Best Linear Projection
 
@@ -206,23 +208,24 @@ print(blp)
 
 **What is being performed**
 
-* `best_linear_projection()` regresses the forest’s doubly‑robust scores on a user‑chosen set of covariates to obtain the *least‑squares linear approximation* of the conditional average treatment effect (CATE).  
-* Because the scores are orthogonal to the nuisance estimates, the usual \(t\)-tests on the coefficients are valid.
+`best_linear_projection()` estimates a regression of a random forest's doubly‑robust scores on a (selected) set of covariates. The result is a *least‑squares linear approximation* of the conditional average treatment effect (CATE). Importantly, we can perform hypothesis tests on the coefficients of that regression as the random forest scores are orthogonal to the error estimates.
 
 **Output and interpretation**
 
+At least two covariates (domestic violence rate, religious adherence) significantly impact the CATE. Hence, the treatment effect is not homogeneous across counties.
+
 | Covariate | Coefficient | s.e. | \(p\)‑value | Meaning |
 |-----------|-------------|------|-------------|---------|
-| Religious adherence | **–0.0156** | 0.0038 | <0.001 | Less‑religious counties experience larger increases in divorce after the law change. |
-| Domestic‑violence rate | **+0.049** | 0.022 | 0.028 | Heterogeneity is positive: high‑violence areas react more strongly. |
-| Female labour‑force participation | +0.012 | 0.006 | 0.070 | Weak evidence of a positive gradient. |
-| Education rate & Social‑services spending | n.s. | — | >0.5 | No linear association with the effect. |
-
-***Take‑away.*** At least two covariates (religiosity, domestic violence) are highly significant, so the treatment effect is **not homogeneous** across counties.
+| Domestic‑violence rate | **+0.0488** | 0.0223 | 0.028 | Counties with a high domestic violence rate tend to have a larger increase in the divorce rate after the law change. |
+| Religious adherence | **–0.0158** | 0.0038 | <0.001 | We observe larger increases in the divorce rate after the law change in less religious counties. |
+| Female labour‑force participation | +0.0116 | 0.0065 | 0.070 | Some indication of a positive correlation between female labour force participation and treatment effect, however p-value > 0.05. |
+| Education rate & Social‑services spending | 0.0026  | 0.0046 | > 0.5 | No significant relationship with treatment effect. |
+| Crime rate | 0.0002 | 0.0003 | > 0.4 | No significant relationship with treatment effect. |
 
 ### 2(b)(ii) The Targeting Operator Characteristic
 
 ```{r}
+# split sample by state and create training subsample
 samples.by.state <- split(seq_along(final_df$state_id), final_df$state_id)
 num.states <- length(samples.by.state)
 train <- unlist(samples.by.state[sample(1:num.states, num.states / 2)])
@@ -244,6 +247,9 @@ eval.forest <- causal_forest(
   clusters = final_df$state_id[-train])
 
 rate.cate <- rank_average_treatment_effect(eval.forest, tau.hat.eval)
+png("2(b)(ii) TOC curve.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By decreasing estimated CATE")
+dev.off()
 plot(rate.cate, main = "TOC: By decreasing estimated CATE")
 ```
 ```{r}
@@ -261,43 +267,46 @@ colnames(covariates)[ranked.vars_as[1:5]]
 
 **What is being performed**
 
-* The TOC curve orders counties by the forest’s predicted CATE and plots, for each treated fraction \(q\in(0,1]\), the difference between the average effect in the top‑\(q\) share and the overall ATE.  
-* The **Rank‑Weighted Average Treatment Effect (RATE)** condenses that curve into one number; its standard error comes from sample splitting.
+* We start by running a random forest to calculate predicted CATEs by county. Then we rank counties by decreasing ATE and consider a fraction \(r\in(0,1]\) of the counties with the highest ATE. Then, we plot the difference between the ATE of each fraction of counties and the ATE of the whole sample as a function of the fraction. Finally, the **Rank‑Weighted Average Treatment Effect (RATE)** calculates a weighted ATE by ranking. Note that due to its dependence on how we split the sample, the RATE has a standard error.
 
 **Output**
 
 ```{r}
+# calculate CIs for RATE
 ci_lower_rate.cate <- rate.cate$estimate - 1.96 * rate.cate$std.err
 ci_upper_rate.cate <- rate.cate$estimate + 1.96 * rate.cate$std.err
-cat("CATE:", rate.cate$estimate, 
+cat("RATE:", rate.cate$estimate, 
     "\nStd. Error:", rate.cate$std.err,
     "\n95% CI: [", ci_lower_rate.cate, ", ", ci_upper_rate.cate, "]\n")
 ```
 
 **Interpretation**
 
-* Because zero is **outside** the confidence interval, we reject the null of no heterogeneity.  
-* Practically: restricting treatment to the 50% of counties the forest ranks highest would raise the average effect by roughly **0.35p.p.**, a three‑fold gain over treating at random.
+As $0\notin CI$, we conclude that treating only the top-CATE share of sample units would significantly increase the ATE. Hence, we can assume that treatment effects are not homogeneous. The TOC-curve shows that, for example, restricting treatment to the 50% highest-ranked fraction of counties would lead to an increase in the ATE of roughly **0.35p.p.**.
 
 
 ### 2(b)(iii) Distribution of CATEs
 
 > Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
 
-#### i. Religious Adherence
+#### 2(b)(iii)(1) Religious Adherence
 
 ```{r}
 driver_s1 <- "religious_adherence"
 
-driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+driver <-  covariates[-train, driver_s1]  
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing religious adherence")
+png("2(b)(iii) TOC religious adherence.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By increasing religious adherence")
+dev.off()
+
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing religious adherence")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver - religious_adherence
+#| label: Driver 1: religious adherence
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$religious_adherence),
@@ -317,30 +326,40 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("steelblue", "tomato")) +
-  scale_fill_manual(  values = c("steelblue", "tomato")) +
-  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+  scale_colour_manual(values = c("darkgreen", "steelblue")) +
+  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  labs(title    = "Religious adherence and estimated CATE",
        x        = "Driver (Religious Adherence)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
+ggsave(
+  filename = "2(b)(iii) CATE curve religious adherence.png",
+  width = 7,
+  height = 5,
+  dpi = 300
+  )
 ```
 
-#### ii. Domestic Violence Rate
+#### 2(b)(iii)(2) Domestic Violence Rate
 
 ```{r}
 driver_s1 <- "domestic_violence_rate"
 
-driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+driver <-  covariates[-train, driver_s1]  
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing domestic violence rate")
+png("2(b)(iii) TOC domestic violence rate.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By increasing dom. violence rate")
+dev.off()
+
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing dom. violence rate")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver - domestic_violence_rate
+#| label: Driver 2: domestic violence rate
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$domestic_violence_rate),
@@ -360,30 +379,40 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("steelblue", "tomato")) +
-  scale_fill_manual(  values = c("steelblue", "tomato")) +
-  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
-       x        = "Driver (Domestic Violence)",
+  scale_colour_manual(values = c("darkgreen", "steelblue")) +
+  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  labs(title    = "Domestic violence rate and estimated CATE",
+       x        = "Driver (Domestic Violence Rate)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
+ggsave(
+  filename = "2(b)(iii) CATE curve domestic violence rate.png",
+  width = 7,
+  height = 5,
+  dpi = 300
+  )
 ```
 
-#### iii. Women Labour Force Participation
+#### 2(b)(iii)(3) Women Labour Force Participation
 
 ```{r}
 driver_s1 <- "women_labor_force_participation"
 
-driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+driver <-  covariates[-train, driver_s1]  
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+png("2(b)(iii) TOC female labour participation.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By increasing female labour participation")
+dev.off()
+
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By incr. female labour participation")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver - women_labor_force_participation
+#| label: Driver 3: women labour force participation
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$women_labor_force_participation),
@@ -403,30 +432,40 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("steelblue", "tomato")) +
-  scale_fill_manual(  values = c("steelblue", "tomato")) +
-  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
-       x        = "Driver (Women labour force participation)",
+  scale_colour_manual(values = c("darkgreen", "steelblue")) +
+  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  labs(title    = "Female labour participation and estimated CATE",
+       x        = "Driver (Women Labour Force Participation)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
+ggsave(
+  filename = "2(b)(iii) CATE curve female labour participation.png",
+  width = 7,
+  height = 5,
+  dpi = 300
+  )
 ```
 
-#### iv. Education Rate
+#### 2(b)(iii)(4) Education Rate
 
 ```{r}
 driver_s1 <- "education_rate"
 
-driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+driver <-  covariates[-train, driver_s1]  
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
+png("2(b)(iii) TOC education rate.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By increasing education rate")
+dev.off()
+
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing education rate")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver - education_rate
+#| label: Driver 4: education rate
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$education_rate),
@@ -446,29 +485,39 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("steelblue", "tomato")) +
-  scale_fill_manual(  values = c("steelblue", "tomato")) +
-  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+  scale_colour_manual(values = c("darkgreen", "steelblue")) +
+  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  labs(title    = "Education rate and estimated CATE",
        x        = "Driver (Education rate)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
+ggsave(
+  filename = "2(b)(iii) CATE curve education rate.png",
+  width = 7,
+  height = 5,
+  dpi = 300
+  )
 ```
-#### v. Childcare Availability
+#### 2(b)(iii)(5) Childcare Availability
 
 ```{r}
 driver_s1 <- "childcare_availability"
 
-driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+driver <-  covariates[-train, driver_s1]  
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
+png("2(b)(iii) TOC childcare availability.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By increasing childcare availability")
+dev.off()
+
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing childcare availability")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver - childcare_availability
+#| label: Driver 5: childcare availability
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$childcare_availability),
@@ -488,71 +537,63 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("steelblue", "tomato")) +
-  scale_fill_manual(  values = c("steelblue", "tomato")) +
-  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+  scale_colour_manual(values = c("darkgreen", "steelblue")) +
+  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  labs(title    = "Childcare availability and estimated CATE",
        x        = "Driver (Education rate)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
+ggsave(
+  filename = "2(b)(iii) CATE curve childcare availability.png",
+  width = 7,
+  height = 5,
+  dpi = 300
+  )
 ```
 
-For each of the five drivers with the highest variable‑importance scores we drew
+***Interpretations of graphical results***
+The below table summarises our insights from the graphical analysis conducted in 2(b). Overall, we observe that treatment effect heterogeneity is mainly driven by differences in religious adherence and in domestic violence rates. A weaker effect attributable to the distribution of female labour participation is possible.
 
-1. **A TOC curve** that ranks solely by that variable, and  
-2. **A scatter‑plot of CATE vs. the driver** (LOESS line by treatment status).
-
-| Driver | Visual pattern | TOC for driver‑only rule | Interpretation |
+| Driver | Graphical Clues | TOC | Interpretation |
 |--------|----------------|--------------------------|---------------|
-| Religious adherence | Strong downward slope. | Curve falls below zero for high \(q\). | **Main negative moderator:** low religiosity → large effect. |
-| Domestic‑violence rate | Clear upward slope. | Positive TOC for low \(q\). | **Positive moderator:** high violence → large effect. |
-| Female labour‑force participation | Mild upward trend. | Slightly positive TOC. | Some heterogeneity, but weaker. |
-| Education rate | Flat cloud. | TOC ~ 0. | No role once other factors enter. |
-| Child‑care availability | No discernible slope. | TOC ~ 0. | Likewise negligible. |
+| Religious Adherence | Strong downward slope. | Negative for high \(q\). | Significant negative effect on ATE. |
+| Domestic Violence Rate | Strong upward slope. | Positive for low \(q\). | Significant positive effect on ATE |
+| Female Labour‑Force Participation | Mild upward slope. | Small positive TOC. | Possible weaker effect on ATE. |
+| Education Rate | No identifiable trend. | TOC close to zero. | No observable effect on ATE. |
+| Child‑Care Availability | No identifiable trend. | TOC close to zero. | No observable effect on ATE. |
 
-***Graphical evidence*** therefore reinforces the BLP story: heterogeneity is driven primarily by religiosity and pre‑existing domestic violence, with a secondary contribution from female labour participation.
-
-## Question 2(c)
+## Exercise 2(c)
 
 > Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
 
-Points 2(b)(i) and 2(b)(iii) both appear to confirm that heterogeneous treatment effects are present and, in particular, that *religious adherence* plays a fundamental role in driving such heterogeneity; namely, an increase in such driver is associated to a statistically significant reduction in the divorce rate.
+The analyses in 2(b) show that heterogeneity in treatment effects is likely present. For a more detailed interpretation please refer our explanations in point 2(b).
 
-## Question 2(d)
+## Exercise 2(d)
 
 > An important aspect in the implementation of causal forests is the use of ”honest trees”, as explained in section 2.4 of Wager and Athey (2017). Explain this procedure and why it is important for our estimation of CATEs. Rerun your analysis without ”honest trees” by selecting `honesty = FALSE`.
 
-### i. Honest Trees Explanations
+### 2(d)(i) Review of the "Honest Tree" Concept
 
-When we grow a causal tree we do two distinct things:
+A causal tree is grown in two steps: First, the algorithm determines where to split the data, meaning how the covariate space should be partitioned. Second, once the partition is fixed, it computes the treatment effect within each final leaf, typically as a difference in average outcomes.
 
-1. **Choose the split points**—i.e. we decide how to partition the covariate space;  
-2. **Estimate the treatment effect inside each terminal leaf**—usually the difference in sample means.
+A tree is considered honest if no observation is used for both of those tasks within the same tree. In practice, this is implemented by randomly dividing each bootstrap sample into two equal parts. One half, the split sample, is used exclusively to search over candidate partitions using a CART-type splitting rule. The other half, the estimation sample, is then passed through the completed tree, and its observed outcomes Y_i and treatment assignments W_i are used to estimate the treatment effect in each terminal node.
+This procedure is repeated independently for every tree in the forest. As a result, a given observation may be used for splitting in some trees and for estimation in others, but it never serves both purposes within the same tree.
 
-A tree is called **_honest_** when the same observation is **never allowed to influence both steps inside a single tree**.  
-Concretely, each bootstrap subsample is divided at random into two equally sized halves:
+Honesty is central to CATE estimation for several reasons.
 
-* the **“split” sample** is used _only_ to evaluate candidate splits with a CART‑style criterion;  
-* the **“estimation” sample** is dropped down the already‑built tree and supplies the outcomes \(Y_i\) (and treatments \(W_i\)) that define the within‑leaf treatment effect. citeturn1view0  
+First, it supports valid inference. The honesty condition is what allows Wager and Athey to establish asymptotic normality for the forest estimator and consistency of variance estimators such as the infinitesimal jackknife and out-of-bag methods. Without honesty, confidence intervals that are supposed to have 95% coverage can perform much worse.
 
-Because every tree repeats this procedure independently, each observation will sometimes fall into the split half and sometimes into the estimation half across the forest, but never plays both roles at once.
+Second, it reduces bias. When the same observations are used both to choose the splits and to estimate the leaf effects, the tree can overfit random fluctuations in the data. That makes selected leaves appear to have more extreme treatment effects than they really do. Keeping the splitting and estimation stages separate helps recover conditional unbiasedness.
 
-Honesty plays a critical role in estimating CATEs, namely because of the following reasons:
+Third, it improves out-of-sample reliability. Honest trees are less prone to overstating differences in treatment effects across subgroups, so the forest tends to produce a more trustworthy ranking of CATEs when applied to new data.
 
-* **Bias control.**  
-  If the same data are used to pick splits and to compute leaf means, the algorithm can “chase noise”: leaves will look more extreme than they truly are because the split rule selected them _for_ that extremeness. Separating the two roles restores (conditional) unbiasedness.
 
-* **Valid standard errors and confidence bands.**  
-  Honesty lets Wager & Athey prove that the forest estimator is asymptotically normal and that the infinitesimal jackknife (or out‑of‑bag) variance estimator is consistent. Without honesty, nominal 95% CIs can undercover badly.
-
-* **Better generalisation of heterogeneous effects.**  
-  In practice, honest trees moderate the tendency to exaggerate differences across sub‑groups, making the forest’s ranking of CATEs more reliable out of sample.
-
-### ii. Comparison of Results
+### 2(d)(ii) Comparison of Results
 
 ```{r}
-#| label: Estimating the causal forest without honest trees
+#| label: Re-estimation of the causal forest without the honesty property
 
 # Fit the causal forest
 tau.forest.hf <- causal_forest(covariates,
@@ -603,29 +644,35 @@ eval.forest_hf <- causal_forest(
   clusters = final_df$state_id[-train])
 
 rate.cate_hf <- rank_average_treatment_effect(eval.forest_hf, tau.hat.eval_hf)
+
+png("2(d)(ii) TOC non-honest forest.png", width = 1600, height = 1200, res = 300)
+plot(rate.cate, main = "TOC: By decreasing estimated CATE")
+dev.off()
+
 plot(rate.cate_hf, main = "TOC: By decreasing estimated CATE")
 ```
 
-1.  **Is your average treatment effect the same?**
+1.  **Result: Is your average treatment effect the same?**
 
-The non‐honest forest yields virtually the same ATE as the honest forest. The point estimates are practically identical, their standard errors overlap almost exactly, and the 95% confidence intervals coincide. In other words, disabling honesty did not materially change our estimate of the average effect of unilateral divorce laws on the simulated divorce‐rate change.
-
-2.  **When would you expect this to not be the case?**
-
-1. **Small or noisy data sets.**  With few observations per leaf, re‑using outcomes for split selection inflates bias; honesty can have a visible impact even on the ATE.  
-2. **Aggressive tree depth / tiny leaves.**  The deeper the tree, the more each individual outcome drives both the split and the estimate, heightening adaptive bias.  
-3. **Strong, sparse heterogeneity.**  If real treatment effects vary sharply in narrow regions of the covariate space, a non‑honest tree may identify many false “pockets” of large effects, pushing the forest’s overall average up or down.  
-4. **Propensity imbalance in observational studies.**  When treatment assignment is highly uneven, a split rule that inspects \(Y\) can pick leaves where treated and control units differ systematically in covariates, magnifying selection bias; honesty shields against that.  
-5. **When you rely on the _distribution_ of CATEs.**  Tasks such as targeting, subgroup policy evaluation, or hypothesis testing about heterogeneous drivers depend on getting the *shape* of the CATE surface right.  There honesty often makes a tangible difference even if the mean effect stays similar.
-
-Our re‑estimated the forest with `honesty = FALSE`:
+Our re‑estimated non-honest random forest yields:
 
 | Specification | ATE | Std.err. |
 |---------------|-----|-----------|
 | **Honest (default)** | 0.0436 | 0.0650 |
-| **Non‑honest** | 0.0468 | 0.0648 |
+| **Non‑honest** | 0.0416 | 0.0649 |
 
-The average treatment effect (ATE) shifted by only **0.003 percentage points**, an amount far smaller than its standard error, and the precision hardly changed.  
-This similarity is not surprising, because the ordinary ATE is an **unconditional** object—essentially a grand mean of all unit‑level effects.  Even a biased leaf estimator will average out much of its over‑ and under‑shooting when we integrate over the covariate distribution.
+The average treatment effect does not considerably change in the re-estimation, neither in size nor in precision. The 95% CIs essentially coincide.
+
+This "robustness" of the ATE estimates is due to the construction of the ATE itself: it is itself already an average of all unit‑level effects, hence the bias in the random forest estimator arising from individual units under lack of honesty will be largely averaged out when aggregating over all units.
+
+2.  **When would you expect this to not be the case?**
+
+1.  **Large and concentrated heterogeneity.**  If there are small regions in the sample space where treatment effects differ highly, a non‑honest estimation may be strongly biased by those regions if the respective observations end up being selected often.
+2.  **Propensity imbalances.**  When treatment assignment is highly uneven, a split rule based on \(Y\) can pick leaves where treated and control units differ systematically in covariates, deteriorating potential selection bias issues. 
+3. **Small or noisy data sets.**  When each leaf only has a few observations, the biasing effect of re‑using outcomes for split selection is more powerful.   
+4. **Tree structure.**  The deeper the tree and the tinier each leaf, the larger the effect of an individual outcome on both the split decision and the estimates. If the selection of individuals is biased, then this bias will be amplified under such a tree structure.
+5. **CATE distribution impact.**  Some analyses require knowledge of the shape of the CATE distribution (targeting, subgroup policy evaluation, hypothesis testing,...). Thus, even when the mean effect is unchanged without honesty, the arising bias in the CATE distribution can make such analyses inaccurate.
+
+
 
 
