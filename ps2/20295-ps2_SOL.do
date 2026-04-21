@@ -51,9 +51,9 @@ if ("`user'" == "Sara") {
 
 if ("`user'" == "flore") {
     global filepath 
-"C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files"
+"C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 2\files"
 	global output 
-"\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 1\files\outputs"
+"\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 2\files\outputs"
 }
 
 
