@@ -329,8 +329,8 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("darkgreen", "steelblue")) +
-  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  scale_colour_manual(values = c("firebrick3", "steelblue")) +
+  scale_fill_manual(  values = c("firebrick3", "steelblue")) +
   labs(title    = "Religious adherence and estimated CATE",
        x        = "Driver (Religious Adherence)",
        y        = "Estimated CATE",
@@ -382,8 +382,8 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("darkgreen", "steelblue")) +
-  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  scale_colour_manual(values = c("firebrick3", "steelblue")) +
+  scale_fill_manual(  values = c("firebrick3", "steelblue")) +
   labs(title    = "Domestic violence rate and estimated CATE",
        x        = "Driver (Domestic Violence Rate)",
        y        = "Estimated CATE",
@@ -435,8 +435,8 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("darkgreen", "steelblue")) +
-  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  scale_colour_manual(values = c("firebrick3", "steelblue")) +
+  scale_fill_manual(  values = c("firebrick3", "steelblue")) +
   labs(title    = "Female labour participation and estimated CATE",
        x        = "Driver (Women Labour Force Participation)",
        y        = "Estimated CATE",
@@ -488,8 +488,8 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("darkgreen", "steelblue")) +
-  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  scale_colour_manual(values = c("firebrick3", "steelblue")) +
+  scale_fill_manual(  values = c("firebrick3", "steelblue")) +
   labs(title    = "Education rate and estimated CATE",
        x        = "Driver (Education rate)",
        y        = "Estimated CATE",
@@ -540,8 +540,8 @@ ggplot(scatter_data,
   geom_smooth(method = "loess",
               se     = TRUE, 
               aes(fill = treat)) +   
-  scale_colour_manual(values = c("darkgreen", "steelblue")) +
-  scale_fill_manual(  values = c("darkgreen", "steelblue")) +
+  scale_colour_manual(values = c("firebrick3", "steelblue")) +
+  scale_fill_manual(  values = c("firebrick3", "steelblue")) +
   labs(title    = "Childcare availability and estimated CATE",
        x        = "Driver (Education rate)",
        y        = "Estimated CATE",
