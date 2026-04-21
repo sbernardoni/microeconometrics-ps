@@ -302,7 +302,7 @@ driver <-  covariates[-train, driver_s1]
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
 png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC religious adherence.png"), width = 1600, height = 1200, res = 300)
-plot(rate.cate, main = "TOC: By increasing religious adherence")
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing religious adherence")
 dev.off()
 
 plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing religious adherence")
@@ -355,7 +355,7 @@ driver <-  covariates[-train, driver_s1]
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
 png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC domestic violence rate.png"), width = 1600, height = 1200, res = 300)
-plot(rate.cate, main = "TOC: By increasing dom. violence rate")
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing dom. violence rate")
 dev.off()
 
 plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing dom. violence rate")
@@ -408,7 +408,7 @@ driver <-  covariates[-train, driver_s1]
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
 png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC female labour participation.png"), width = 1600, height = 1200, res = 300)
-plot(rate.cate, main = "TOC: By increasing female labour participation")
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By incr. female labour participation")
 dev.off()
 
 plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By incr. female labour participation")
@@ -461,7 +461,7 @@ driver <-  covariates[-train, driver_s1]
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
 png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC education rate.png"), width = 1600, height = 1200, res = 300)
-plot(rate.cate, main = "TOC: By increasing education rate")
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing education rate")
 dev.off()
 
 plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing education rate")
@@ -513,7 +513,7 @@ driver <-  covariates[-train, driver_s1]
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
 png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC childcare availability.png"), width = 1600, height = 1200, res = 300)
-plot(rate.cate, main = "TOC: By increasing childcare availability")
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing childcare availability")
 dev.off()
 
 plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing childcare availability")
@@ -649,7 +649,7 @@ eval.forest_hf <- causal_forest(
 rate.cate_hf <- rank_average_treatment_effect(eval.forest_hf, tau.hat.eval_hf)
 
 png(filename=file.path("ps2_ex2_graphs","2(d)(ii) TOC non-honest forest.png"), width = 1600, height = 1200, res = 300)
-plot(rate.cate, main = "TOC: By decreasing estimated CATE")
+plot(rate.cate_hf, main = "TOC: By decreasing estimated CATE")
 dev.off()
 
 plot(rate.cate_hf, main = "TOC: By decreasing estimated CATE")
