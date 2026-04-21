@@ -10,6 +10,7 @@ knitr:
 # Problem Set 2 - Exercise 2
 
 -----------------------------------------------------
+COMMENT: Please change the root directory (at the top ) and the data_path in the Data prep R chunk to point towards the desired directory before running the file.
 
 > We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
