@@ -10,6 +10,7 @@ knitr:
 # Problem Set 2 - Exercise 2
 
 -----------------------------------------------------
+COMMENT: Please change the root directory (at the top ) and the data_path in the Data prep R chunk to point towards the desired directory before running the file.
 
 > We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
@@ -177,7 +178,7 @@ ggplot(hist_df, aes(x = propensity)) +
     axis.text    = element_text(size = 12)
   )
 ggsave(
-  filename = "2(a) distribution of propensity scores.png",
+  filename = file.path("ps2_ex2_graphs","2(a) distribution of propensity scores.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -247,7 +248,7 @@ eval.forest <- causal_forest(
   clusters = final_df$state_id[-train])
 
 rate.cate <- rank_average_treatment_effect(eval.forest, tau.hat.eval)
-png("2(b)(ii) TOC curve.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(b)(ii) TOC curve.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By decreasing estimated CATE")
 dev.off()
 plot(rate.cate, main = "TOC: By decreasing estimated CATE")
@@ -298,7 +299,7 @@ driver <-  covariates[-train, driver_s1]
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-png("2(b)(iii) TOC religious adherence.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC religious adherence.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By increasing religious adherence")
 dev.off()
 
@@ -335,7 +336,7 @@ ggplot(scatter_data,
        fill     = "Treatment Group") +
   theme_minimal()
 ggsave(
-  filename = "2(b)(iii) CATE curve religious adherence.png",
+  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve religious adherence.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -351,7 +352,7 @@ driver <-  covariates[-train, driver_s1]
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-png("2(b)(iii) TOC domestic violence rate.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC domestic violence rate.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By increasing dom. violence rate")
 dev.off()
 
@@ -388,7 +389,7 @@ ggplot(scatter_data,
        fill     = "Treatment Group") +
   theme_minimal()
 ggsave(
-  filename = "2(b)(iii) CATE curve domestic violence rate.png",
+  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve domestic violence rate.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -404,7 +405,7 @@ driver <-  covariates[-train, driver_s1]
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-png("2(b)(iii) TOC female labour participation.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC female labour participation.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By increasing female labour participation")
 dev.off()
 
@@ -441,7 +442,7 @@ ggplot(scatter_data,
        fill     = "Treatment Group") +
   theme_minimal()
 ggsave(
-  filename = "2(b)(iii) CATE curve female labour participation.png",
+  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve female labour participation.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -457,7 +458,7 @@ driver <-  covariates[-train, driver_s1]
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-png("2(b)(iii) TOC education rate.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC education rate.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By increasing education rate")
 dev.off()
 
@@ -494,7 +495,7 @@ ggplot(scatter_data,
        fill     = "Treatment Group") +
   theme_minimal()
 ggsave(
-  filename = "2(b)(iii) CATE curve education rate.png",
+  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve education rate.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -509,7 +510,7 @@ driver <-  covariates[-train, driver_s1]
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-png("2(b)(iii) TOC childcare availability.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC childcare availability.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By increasing childcare availability")
 dev.off()
 
@@ -546,7 +547,7 @@ ggplot(scatter_data,
        fill     = "Treatment Group") +
   theme_minimal()
 ggsave(
-  filename = "2(b)(iii) CATE curve childcare availability.png",
+  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve childcare availability.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -645,7 +646,7 @@ eval.forest_hf <- causal_forest(
 
 rate.cate_hf <- rank_average_treatment_effect(eval.forest_hf, tau.hat.eval_hf)
 
-png("2(d)(ii) TOC non-honest forest.png", width = 1600, height = 1200, res = 300)
+png(filename=file.path("ps2_ex2_graphs","2(d)(ii) TOC non-honest forest.png"), width = 1600, height = 1200, res = 300)
 plot(rate.cate, main = "TOC: By decreasing estimated CATE")
 dev.off()
 
