@@ -78,8 +78,8 @@ use "https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps2
 /* (b) The article relies on the timing of the introduction of unilateral divorce laws to compare divorce rates in the two possible regimes. One of the assumptions of this analysis is that states with the previous divorce law and the ones that introduced unilateral divorce laws would both follow parallel trends in their divorce rates in the absence of the changes to the legislation. Create 2 different graphs to support this assumption: (i) the first graph should convey the same message as the one in Figure 1 of the original paper, comparing states that did not change their divorce laws during 1968 - 1988 (Friedberg's sample) and the ones that did; (ii) the second graph should perform the same description, but focusing on the simpler analysis we will perform in the next exercise: compare the states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000, only reporting the time trend up to 1978 and including a vertical line between 1968 and 1969 (when the first reforms in our sample started). Do your results support the assumption of parallel trends? */
 
 preserve
-	egen total_pop_by_state = total(stpop), by(year)
-	gen wgt = stpop/total_pop_by_state
+	egen total_pop_by_year = total(stpop), by(year)
+	gen wgt = stpop/total_pop_by_year
 
 	gen TREATED = (lfdivlaw >= 1968 & lfdivlaw <= 1988)
 	sum TREATED 
@@ -136,8 +136,8 @@ restore
 
 
 preserve
-egen total_pop_by_state = total(stpop), by(year)
-gen wgt = stpop/total_pop_by_state
+egen total_pop_by_year = total(stpop), by(year)
+gen wgt = stpop/total_pop_by_year
 
 gen TREATED = (lfdivlaw >= 1969  & lfdivlaw <= 1973)
 
