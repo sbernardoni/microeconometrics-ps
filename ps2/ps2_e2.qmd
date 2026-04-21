@@ -52,6 +52,9 @@ library(gridExtra)
 ```{r}
 #| label: Data prep
 
+# seed for random sampling
+set.seed(123)
+
 # Use "expanded_data.csv"
 data_path <- "C:/Users/flore/OneDrive/Documents/Bocconi/Year 2/Microeconometrics/PS 2/files/expanded_data.csv"
 df <- read.csv(data_path)
@@ -125,7 +128,7 @@ covariates <- subset(final_df,
                      )
 ```
 
-We can now estimate the causal forest
+We can now estimate the causal forest.
 
 ```{r}
 #| label: Causal forest implementation
@@ -215,15 +218,15 @@ print(blp)
 
 **Output and interpretation**
 
-At least two covariates (domestic violence rate, religious adherence) significantly impact the CATE. Hence, the treatment effect is not homogeneous across counties.
+At least three covariates (domestic violence rate, religious adherence, female labour participation) significantly impact the CATE. Hence, the treatment effect is not homogeneous across counties.
 
 | Covariate | Coefficient | s.e. | \(p\)‑value | Meaning |
 |-----------|-------------|------|-------------|---------|
-| Domestic‑violence rate | **+0.0488** | 0.0223 | 0.028 | Counties with a high domestic violence rate tend to have a larger increase in the divorce rate after the law change. |
-| Religious adherence | **–0.0158** | 0.0038 | <0.001 | We observe larger increases in the divorce rate after the law change in less religious counties. |
-| Female labour‑force participation | +0.0116 | 0.0065 | 0.070 | Some indication of a positive correlation between female labour force participation and treatment effect, however p-value > 0.05. |
-| Education rate & Social‑services spending | 0.0026  | 0.0046 | > 0.5 | No significant relationship with treatment effect. |
-| Crime rate | 0.0002 | 0.0003 | > 0.4 | No significant relationship with treatment effect. |
+| Domestic‑violence rate | **+0.0499** | 0.0223 | 0.025 | Counties with a high domestic violence rate tend to have a larger increase in the divorce rate after the law change. |
+| Religious adherence | **–0.0159** | ~0 | <0.001 | We observe larger increases in the divorce rate after the law change in less religious counties. |
+| Female labour‑force participation | +0.0117 | 0.0129 | 0.0465 | Some indication of a positive correlation between female labour force participation and treatment effect. |
+| Education rate & Social‑services spending | 0.0046  | 0.0046 | > 0.5 | No significant relationship with treatment effect. |
+| Crime rate | 0.0003 | 0.0003 | > 0.4 | No significant relationship with treatment effect. |
 
 ### 2(b)(ii) The Targeting Operator Characteristic
 
@@ -503,27 +506,27 @@ ggsave(
   dpi = 300
   )
 ```
-#### 2(b)(iii)(5) Childcare Availability
+#### 2(b)(iii)(5) Crime Rate
 
 ```{r}
-driver_s1 <- "childcare_availability"
+driver_s1 <- "crime_rate"
 
 driver <-  covariates[-train, driver_s1]  
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC childcare availability.png"), width = 1600, height = 1200, res = 300)
-plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing childcare availability")
+png(filename=file.path("ps2_ex2_graphs","2(b)(iii) TOC crime rate.png"), width = 1600, height = 1200, res = 300)
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing crime rate")
 dev.off()
 
-plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing childcare availability")
+plot(rate.rel.ad, xlab = "Fraction treated", ylab = "Treatment effect", main = "TOC: By increasing crime rate")
 ```
 
 ```{r}
-#| label: Driver 5: childcare availability
+#| label: Driver 5: crime rate
 
 scatter_data <- data.frame(
-  driver = (covariates[-train, ]$childcare_availability),
+  driver = (covariates[-train, ]$crime_rate),
   cate   = tau.hat.eval,
   treat  = treat[-train]
 )
@@ -542,14 +545,14 @@ ggplot(scatter_data,
               aes(fill = treat)) +   
   scale_colour_manual(values = c("firebrick3", "steelblue")) +
   scale_fill_manual(  values = c("firebrick3", "steelblue")) +
-  labs(title    = "Childcare availability and estimated CATE",
-       x        = "Driver (Education rate)",
+  labs(title    = "Crime rate and estimated CATE",
+       x        = "Driver (Crime rate)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
 ggsave(
-  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve childcare availability.png"),
+  filename = file.path("ps2_ex2_graphs","2(b)(iii) CATE curve crime rate.png"),
   width = 7,
   height = 5,
   dpi = 300
@@ -561,11 +564,11 @@ The below table summarises our insights from the graphical analysis conducted in
 
 | Driver | Graphical Clues | TOC | Interpretation |
 |--------|----------------|--------------------------|---------------|
-| Religious Adherence | Strong downward slope. | Negative for high \(q\). | Significant negative effect on ATE. |
-| Domestic Violence Rate | Strong upward slope. | Positive for low \(q\). | Significant positive effect on ATE |
-| Female Labour‑Force Participation | Mild upward slope. | Small positive TOC. | Possible weaker effect on ATE. |
+| Religious Adherence | Strong downward slope. | Positive everywhere. | Significant negative effect on ATE. |
+| Domestic Violence Rate | Moderate upwards slope. | Positive for low \(q\). | Significant positive effect on ATE |
+| Female Labour‑Force Participation | Strong upwards slope. | Positive for large \(q\). | Possible weaker effect on ATE. |
 | Education Rate | No identifiable trend. | TOC close to zero. | No observable effect on ATE. |
-| Child‑Care Availability | No identifiable trend. | TOC close to zero. | No observable effect on ATE. |
+| Crime Rate | Upwards trend. | TOC slightly negative for small \(q\). | No major observable effect on ATE. |
 
 ## Exercise 2(c)
 
@@ -661,8 +664,8 @@ Our re‑estimated non-honest random forest yields:
 
 | Specification | ATE | Std.err. |
 |---------------|-----|-----------|
-| **Honest (default)** | 0.0436 | 0.0650 |
-| **Non‑honest** | 0.0416 | 0.0649 |
+| **Honest (default)** | 0.0338 | 0.0651 |
+| **Non‑honest** | 0.0338 | 0.0651 |
 
 The average treatment effect does not considerably change in the re-estimation, neither in size nor in precision. The 95% CIs essentially coincide.
 
