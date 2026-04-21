@@ -27,9 +27,11 @@ ssc install ftools, replace
 ssc install moremata, replace
 ssc install reghdfe, replace
 ssc install gtools, replace
+ssc install require, replace
 */
 
 /* For graphs & stuff */
+
 /*
 ssc install grstyle, replace
 ssc install coefplot, replace
@@ -50,10 +52,8 @@ if ("`user'" == "Sara") {
 }
 
 if ("`user'" == "flore") {
-    global filepath 
-"C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 2\files"
-	global output 
-"\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 2\files\outputs"
+    global filepath "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 2\files"
+	global output "\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 2\files\outputs"
 }
 
 
@@ -402,7 +402,7 @@ preserve
 	/* (iii) Run the command bacondecomp to analyze the decomposition of the treatment effect. Plot the graph showing the relationship between the treatment effect estimates and the corresponding weights. Briefly explain what is the analysis proposed by Goodman-Bacon (2021). Is there evidence of issues regarding negative weights? */
 	
 		bacondecomp div_rate IMP_UNILATERAL [aweight = init_stpop], robust  mcolors(blue red green)
-	graph rename bacondecomp22
+	*graph rename bacondecomp22
 	graph export "$output/Bacon_decomposition_graph.pdf", replace
 restore
 	
