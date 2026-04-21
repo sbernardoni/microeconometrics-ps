@@ -7,6 +7,8 @@ knitr:
     root.dir: "C:/Users/flore/OneDrive/Documents/Bocconi/Year 2/Microeconometrics/PS 2"
 ---
 
+COMMENT: Before running the code, please adjust the root directory above as well as the file path in the code chunk "data prep" to the desired locations.
+
 # Problem Set 2 - Exercise 2
 
 -----------------------------------------------------
