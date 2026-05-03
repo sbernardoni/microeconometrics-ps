@@ -22,7 +22,7 @@ set more off
 /* First time running this code? Please remove the comment marks from the code below and install all of the necessary packages. */
 
 /* Analysis packages */
-/* 
+/*
 ssc install outreg2, replace
 ssc install rdrobust, replace
 ssc install estout, replace
@@ -397,10 +397,19 @@ The graph shows the point estimates coming from the adoption of different bandwi
 
 *=============================================================================
 **#								Exercise 2 									*/
-/* Use the file pset_3.dta													*/
+
+/* Assume Gonzalez (2021) did not have the exact longitude of each voting center in his sample, only a proxy. Instead, latitude was correctly measured. Endowed with the latitude and
+the proxy for longitude of each polling center, Gonzalez (2021) went on and measured the
+distance between each polling center "location" and the closest point with 2G coverage. In
+addition, Gonzalez (2021) has a coverage indicator for each polling center that has been
+collected by ECC officials.
+
+Both variables can be found in fraud_pcenter_final. The distance between the polling
+centers and their closest points with 2G coverage is titled " dist"; the cell phone coverage
+indicator is titled "cov".												*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/2f55a86f76628ec3c31c25581dafa7e4469a9f9c/ps3/ps3_data/fraud_pcenter_final.dta", clear
+use "https://github.com/sbernardoni/microeconometrics-ps/raw/refs/heads/main/ps3/ps3_data/fraud_pcenter_final.dta", clear
 
 * First of all, we need to generate the appropriate variables
 
