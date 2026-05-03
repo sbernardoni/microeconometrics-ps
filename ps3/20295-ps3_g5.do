@@ -6,9 +6,9 @@
 
 *=============================================================================
 
-/* Group number: 1 */
+/* Group number: 5 */
 
-/* Group composition: Stefano Graziosi, Gabriele Molè, Sofia Briozzo */
+/* Group composition: Sara Bernardoni, Gabriele Molè, Florens Schlosser */
 *=============================================================================
 
 *=============================================================================
@@ -19,23 +19,25 @@ clear
 
 set more off
 
-/* For commands */
+/* First time running this code? Please remove the comment marks from the code below and install all of the necessary packages. */
 
-/* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
-
+/* Analysis packages */
+/* 
 ssc install outreg2, replace
 ssc install rdrobust, replace
 ssc install estout, replace
 ssc install rddensity, replace
-ssc install lpdensity, replace
+ssc install lpdensity, replace 
+*/
 
-/* For graphs & stuff */
-
+/* Graphics packages */
+/*
 ssc install grstyle, replace
 ssc install coefplot, replace
 graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
+*/
 
 local user = c(username)
 
@@ -43,27 +45,27 @@ if ("`user'" == "erick") {
     global filepath "/home/erick/TEMP/"
 }
 
-if ("`user'" == "stefanograziosi") {
-	cd "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps"
-    global filepath "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps3"
-	global output "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps3/ps3_output"
+if ("`user'" == "Sara") {
+    global filepath "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps3"
+	global output "C:\Users\Sara\Documents\ESS\20295 - Microeconometrics\microeconometrics-ps\ps3\ps3_output"
 }
+
+if ("`user'" == "flore") {
+    global filepath "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 3\files"
+	global output "\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 3\files\outputs"
+}
+
 
 if ("`user'" == "gabrielemole") {
-    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
+    global filepath "C:\Users\Stealth\Desktop\microeconometrics-ps\ps3"
+	global output "C:\Users\Stealth\Desktop\microeconometrics-ps\ps3\ps3_output"
 }
 
-if ("`user'" == "39331") {
-    global filepath "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\pset_3.dta"
-	global output "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\Output"
-}
+*==============================================*
+/*                   Setup                    */
+*==============================================*
 
-*=============================================================================
-**#								Instructions								*/
-*=============================================================================
-
-	/* This problem set is composed of two exercises, each exercise focusing on a different regression discontinuity design (RDD). In Exercise 1, we follow a standard RDD application, Meyers- son (2014), to study the effect that Islamic political representation had on the educational attainment of women in Turkey during the late 1990s. In Exercise 2, we turn to a spatial RDD, Gonzalez (2021), to study the effect of cell phone coverage on electoral frauds. */
+	/* This problem set is composed of two exercises, each exercise focusing on a different regression discontinuity design (RDD). In Exercise 1, we follow a standard RDD application, Meyersson (2014), to study the effect that Islamic political representation had on the educational attainment of women in Turkey during the late 1990s. In Exercise 2, we turn to a spatial RDD, Gonzalez (2021), to study the effect of cell phone coverage on electoral frauds. */
 	
 /*								Commands									*/
 
@@ -81,14 +83,14 @@ if ("`user'" == "39331") {
 	
 	/* (3) Have in mind that some commands have different default procedures in Stata and R. Since we are not asking you to specify some of these procedures, it is normal that sometimes the results are not exaclty the same between the two languages. */
 
-*=============================================================================
-**#								Exercise 1 									*/
-/* Use the file pset_3.dta													*/
-*=============================================================================
+*============================================*
+*  				Exercise 1					*/
+/*        Use the file pset_3.dta           */
+*============================================*
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011b31d4929fb126f88bfbc4fe39e27d5ac9/ps3/ps3_data/pset_3.dta", clear
+use "C:\Users\flore\OneDrive\Documents\Bocconi\Year 2\Microeconometrics\PS 3\files\pset_3.dta", clear
 
-**# Question (a) 
+* Question (a) * 
 
 	/* (i) Generate a RD Plot of ``T - Islamic mayor in 1994'' - against ``X - Islamic Vote Margin in 1994'' - when the Islamic party wins and lose an election. 
 	Call the y-axis - ``Treatment Variable'' ; call the x-axis - ``Running variable'' */
@@ -98,16 +100,12 @@ graph export "$output/disc_plot.png", replace
 	
 	/* (ii) Is the current design a sharp or a fuzzy RD? Why? */
 	
-		/* A: The graph shows a Sharp Regression Discontinuity design. In a sharp RD, treatment assignment changes deterministically at the cutoff, which means that everyone above the threshold receive the treatment (in our case they have an islamic mayor) and everyone below the threshold does not receive the treatment (and so they do not get a islamic mayor). The plot shows a clean jump from 0 to 1 exactly at the thresholds, with no observations receiving treatment left of the cutoff, and all receiving observations receiving the treatment on the right. */
+		/* Our RD design is sharp by nature. A RDD is sharp if treatment changes deterministically at a cutoff, and fuzzy when the cutoff only induces a probabilistic change in treatment. As the mayoral elections are deterministically won by an Islamic party if the running variable is nonnegative, our RDD must be sharp. The graph reflects this with a clear jump from non-treatment (no Islamic governing party) to treatment (Islamic governing party) at zero. */
 
-**# Question (b)
+* Question (b)
 
-	/* (i) Create a macro named `covariates' containing the baseline variables: ``hischshr1520m i89 vshr islam1994 partycount lpop1994 merkezi merkezp subbuyuk buyuk'' */
-	
-local covariates hischshr1520m i89 vshr_islam1994 partycount lpop1994 merkezi merkezp subbuyuk buyuk
-	
-	/* (ii) Create a table named ``Table_1'', summarizing RD estimates for all baseline variables. Table_1 should have the following columns: Label, MSE-Optimal Bandwidth, RD Estimator, p-value */
-	
+	/* (i) Create a macro named `covariates' containing the baseline variables: ``hischshr1520m i89 vshr_islam1994 partycount lpop1994 merkezi merkezp subbuyuk buyuk''. Create a table named ``Table_1'', summarizing RD estimates for all baseline variables. Table_1 should have the following columns: Label, MSE-Optimal Bandwidth, RD Estimator, p-value, and Effective Number of Observations */
+
 local covariates hischshr1520m i89 vshr_islam1994 partycount lpop1994 merkezi merkezp subbuyuk buyuk
 
 local num: list sizeof covariates
@@ -116,14 +114,18 @@ mat list balance
 local row = 1
 foreach z in `covariates' {
     qui rdrobust `z' X
-	mat balance[`row',1] = round(e(h_l) , .001)
+	*bandwidth (average of left and right)
+	mat balance[`row',1] = round((e(h_l) + e(h_r))/2, .001) 
+	*estimated jump at cutoff
 	mat balance[`row',2] = round(e(tau_cl), .001)
+	*p-value
 	mat balance[`row',3] = round(e(pv_cl), .001)
+	*effective number of observations
 	mat balance[`row',4] = round(e(N_h_l) + e(N_h_r), .001)
 	local ++row
 }
 mat rownames balance = "Share Men High School Education" "Islamic Mayor in 1989" "Islamic vote share 1994" "N parties receiving votes 1994" " Log Population in 1994" " District center" " Province center" "Sub-metro center" "Metro center"
-mat colnames balance = "MSE-Optimal Bandwidth" "RD Estimator" "p-value" "Effective Number of Observations"
+mat colnames balance = "MSE-Optimal Bandwidth (avg)" "RD Estimator" "p-value" "Effective Number of Observations"
 mat list balance 
 
 putexcel set "$output/table1.csv", replace
@@ -133,9 +135,9 @@ putexcel (B1:E1), overwr bold border(bottom thick)
 
 esttab matrix(balance) using "$output/table1.csv", replace
 
-		/* A: Since all p-values are large, this implies that covariates are balanced across the cutoff. The balance checks suggest that the treatment assignment around the cutoff is as good as random, supporting validity of the RD design. */
+		/* Note: None of the RD estimates are significant, hence we can assume that the covariates are balanced along the cutoff. This implies that treatment assignment around the cutoff is "as good as" random, and our RDD approach is valid. */
 	
-**# Question (c)
+* Question (c) *
 
 	/* (i) Generate a RD plot for each of the baseline variables on `covariates`. */
 	
@@ -166,30 +168,39 @@ graph combine hischshr1520m_X i89_X vshr_islam1994_X partycount_X lpop1994_X mer
 	
 graph export "$output/Graph_1.png", replace
 	
-**# Question (d)
+* Question (d) *
 
 	/* (i) Generate a graphic with histograms for the observations to the left and the observations to the right of our cutoff. Choose contrasting colors for the histograms on each side of our cutoff. */
-	
-rdrobust Y X, kernel(triangular) p(1) bwselect(mserd)
-scalar h_left = -e(h_l)
-scalar h_right = e(h_r)
-twoway (histogram X if X >=h_left & X < 0, color(navy%70)) ///
-         (histogram X if X >= 0 & X <= h_right,  color(orange%70) xline(0, lcolor(black) lpattern(solid))), name(hist_1, replace) ///
-      graphregion(color(white)) xtitle(Islamic Vote Margin) ytitle(Density) legend(off) 
 
-local h_l = h_left
-local h_r = h_right
+twoway ///
+    (histogram X if X < 0, color(navy%70)) ///
+    (histogram X if X >= 0, color(orange%70)), ///
+    xline(0, lcolor(black) lpattern(solid)) ///
+    graphregion(color(white)) ///
+	title("Vote margin distribution below/above cutoff") ///
+    xtitle("Islamic Vote Margin") ///
+    ytitle("Density") ///
+    legend(order(1 "X < 0" 2 "X >= 0")) ///
+    name(hist_1, replace)
 	
 	/* (ii) Use `rddensity` to generate a graphic of our running variable X's estimated density. In both graphics, plot a vertical line to signal our cutoff. */
 	
-rddensity X, plot plot_range(`h_l' `h_r') graph_opt(name(hist_2, replace) legend(off) xline(0, lcolor(black) lpattern(solid)) xtitle(Islamic Vote Margin) ytitle(Density))
+rddensity X, plot ///
+    graph_opt(name(hist_2, replace) ///
+    legend(off) ///
+    xline(0, lcolor(black) lpattern(solid)) ///
+	title("Estimated density of vote margins") ///
+    xtitle("Islamic Vote Margin") ///
+    ytitle("Density"))
 	
 	/* (iii) Save a graphic named `Graph_2` containing the histogram plot and the estimated density plot side-by-side. */
 	
-graph combine hist_1 hist_2
+graph combine hist_1 hist_2, cols(2) ///
+    graphregion(color(white)) ///
+    name(graph2, replace)
 graph export "$output/Graph_2.png", replace
 	
-**# Question (e)
+* Question (e) *
 
 	/* (i) Use `rddensity` to test if a discontinuity in our running variable X's density does not exist in our cutoff. */
 	
@@ -198,37 +209,41 @@ graph export "$output/Graph_3.png", replace
 	
 	/* (ii) What are we able to conclude from such test? Is it favorable or against the validity of our RD design? */
 	
-		/* A: The command rddensity implements manipulation testing procedures using local polynomial density estimators as proposed in Cattaneo, Jannson and Ma (2020). To implement an RD design, an important assumption is that the treatment is "as good as random", and so that the control group (so the observations just under the cutoff) are credible counterfactuals to those just above the cutoff. The command rddensity tests whether this is the case. The tests consists in testing whether the density is discontinuous at the cutoff. The null hypothesis is that the function is continuous at the cutoff.
+		/* For a valid RDD design we require that the running variable is continuously distributed around the cutoff. This is, for example, not the case if  individuals around the cutoff are able to manipulate the running variable. In such situations, the  distribution of individuals around the cutoff is no longer "as-good-as-random", hence the units below the cutoff are no longer a valid counterfactual for the units above the cutoff and our RDD fails. The rddensity command gives us a test for (H_1) the existence of a discontinuity in the density of the running variable (in our case the islamic vote margin) at the cutoff.  
 
-		For small window sizes, the p-values are large, so there is no evidence against the null hypothesis (no manipulation). On the other hand, as the window increases in size (from the largest window size of 4.261) , the p-value drops, suggesting that at larger scales there might be manipulation. At the same time, manipulation is typically a bigger issue closer to the cutoff, so it should not be an issue. 
+		We reject the null hypothesis based on the "conventional" test statistic, which yields a p-value of 0.0145, at 5% confidence level. We therefore have to assume that the running variable is not continuously distributed around the cutoff, which may pose a serious threat to the validity of a RD approach. This threat is mitigated by the fact that a robust version of the test yields a p-value of 0.1634, suggesting that after removal of potential bias, we have no indication of disconinuity.
 
-		With the conventional test, we have a small p-value (0.0145) , that might suggest a manipulation at the cutoff, but the robust version of the tests finds a p-value of 0.1634 that suggests no strong evidence of manipulation after accounting for bias correction.
-
-		In general, based on our results, there appears to be no manipulation at the cutoff. Hence, this supports the assumption that the assignment to treatment is likely valid, as there is no evident manipulation of municipalities around the cutoff.  */
+		We also note that the p-values of the test differ considerably based on the window used for fitting the polynomial to the density of X. We do not identify significant discontinuities for small windows (~<= 3.5), for large windows however, p-values are much  smaller. */
 	
-**# Question (f)
+* Question (f) *
 
 	/* (i) Test if alternative discontinuities do not exist in the following alternative cutoffs:
 
 		-10, -5, 5, 10. */
 		
 *** Baseline Test
-rdrobust Y X, c(-10) 
+rdrobust Y X, c(-10)
+display "Conventional p-value: " e(pv_cl)
+display "Robust p-value: " e(pv_rb) 
 *conv. p-value: 0.003, robust: 0.006
 rdrobust Y X, c(-5) 
+display "Conventional p-value: " e(pv_cl)
+display "Robust p-value: " e(pv_rb) 
 *conv. p-value: 0.246 , robust: 0.268
 rdrobust Y X, c(5) 
+display "Conventional p-value: " e(pv_cl)
+display "Robust p-value: " e(pv_rb) 
 *conv. p-value: 0.624 , robust: 0.472
 rdrobust Y X, c(10) 
+display "Conventional p-value: " e(pv_cl)
+display "Robust p-value: " e(pv_rb) 
 *conv. p-value: 0.193 , robust: 0.162
 	
-	/* (ii) Did we found any evidence in favor of the absence of alternative discontinuities? */
+	/* (ii) Did we find any evidence in favor of the absence of alternative discontinuities? */
 		
-		/* A: At the arbitrarily chosen cutoffs of -5, 5 and 10, the null hypothesis of the presence of discontinuities is not rejected. 
+		/* There is no evidence for discontinuities at the cutoffs -5, +5, +10. 
 		
-		At the cutoff -10 there is a statistically significant jump, which might be a problem. This could suggest a local anomaly, and we might ahve found the jump at this cutoff by change. This can happen, especially when testing multiple placebo cutoffs. 
-		
-		To conclude, we have found no consistent evidence that there are discountinuities at random cutoffs, and this supports our findings of the discontinuity at the actual cutoff, in line with RD design assumptions.  */
+		At the cutoff -10 our test identifies a statistically significant jump in outcomes, which violates the fourth requirement for the validity of our RDD, namely that discontinuities do not exist away from the cutoff. While this can arise when checking for arbitrary discontinuities, we need to keep it in mind when discussing the validity of our results. */
 	
 /* After validating our RD design, we can estimate our treatment's effect on our outcomes and check for the robustness of our results. That is what we will do in the following questions. */
 	
