@@ -1,0 +1,13 @@
+		(1)	(2)
+VARIABLES	LABELS	Share of votes under Category C fraud	Share of votes under Category C fraud
+			
+RD_Estimate		-0.117*	-0.737
+		(0.0705)	(0.725)
+			
+Observations		5,138	5,138
+Conventional p-value		0.0965	0.310
+Robust p-value		0.0853	0.217
+Order Loc. Poly. (p)		1	4
+Order Bias (q)		2	5
+Standard errors in parentheses			
+*** p<0.01, ** p<0.05, * p<0.1			

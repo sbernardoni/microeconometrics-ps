@@ -1,0 +1,13 @@
+		(1)	(2)
+VARIABLES	LABELS	At least one station with category C fraud	At least one station with category C fraud
+			
+RD_Estimate		-0.0988	-0.446
+		(0.105)	(0.622)
+			
+Observations		5,138	5,138
+Conventional p-value		0.348	0.473
+Robust p-value		0.361	0.365
+Order Loc. Poly. (p)		1	4
+Order Bias (q)		2	5
+Standard errors in parentheses			
+*** p<0.01, ** p<0.05, * p<0.1			
