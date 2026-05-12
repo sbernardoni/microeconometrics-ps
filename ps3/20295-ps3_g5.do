@@ -247,6 +247,7 @@ display "Robust p-value: " e(pv_rb)
 	
 /* After validating our RD design, we can estimate our treatment's effect on our outcomes and check for the robustness of our results. That is what we will do in the following questions. */
 	
+
 **# Question (g)
 
 	/* (i) Generate a RD Plot of ``Y - Share Women aged 15-20 with High School Education'' - against ``X - Islamic Vote Margin in 1994'' - when the Islamic party wins and loose an election. 
@@ -276,9 +277,7 @@ outreg2 using table_1.tex, replace se bdec(3) sdec(3) ///
 ctitle("Triangular Kernel")
 
 
-/* A: We find a positive and statistically significant effect of the election of a muslim party on the share of women with high school education. 
-The estimated Treatment Effect at the cutoff is 3.2019 percentage points for the uniform kernel and 3.0195 percentage points for the triangular kernel. Both estimates are significant at the 5% level using conventional standard errors (as requested in the guidelines of the problem set). It is worth mentioning that using robust standard errors the p-value for the triangular kernel increases to 0.076, hence granting significance only at the 10% level. 
- The uniform kernel gives equal weights to the observations in the bandwith, while the triangular one gives linearly less weight as observations get further from the cutoff. The results are yet fairly comparable between different approaches.  */
+/* A: The results point to a positive and statistically significant effect of electing a Muslim party on the share of women with high school education. For the uniform kernel, the estimated treatment effect at the cutoff is 3.2019 percentage points; for the triangular kernel, it is 3.0195 percentage points. Both are significant at the 5% level under conventional standard errors, as required by the problem set guidelines. It should be noted that under robust standard errors the p-value for the triangular kernel rises to 0.076, implying significance only at the 10% level. The uniform kernel assigns equal weight to all observations within the bandwidth, whereas the triangular kernel down-weights observations linearly as they move away from the cutoff. Despite this difference in weighting scheme, the two sets of results remain broadly comparable. */
 	
 /* MANDATORY: Use a triangular kernel for these next items. */
 	
@@ -346,9 +345,9 @@ outreg2 using table_1.tex, append se bdec(3) sdec(3) ///
 ctitle("Triangular Local Regression")
 restore
 
-/* A: The global unweighted regression yields a point estimate of 3.683 (statistically significant at the 5% level). This is quite different from the one found in point h). If we adopt triangular weights in the regression, the estimates returns a value of 3.028359 (statistically significant at the 5% level), comparable to the one in h) but probably still a bit noisy due to the large number of observations far from the cutoff used and the high-order polynomial that might be overfitting. An alternative strategy is then restricting the sample to a bandwith close to the cutoff and using linear first order polynomials. 
+/* A: The global unweighted regression returns a point estimate of 3.683, significant at the 5% level, which departs noticeably from the estimate in (h). Applying triangular weights brings the estimate down to 3.028, also significant at the 5% level and closer to (h), though the large number of observations far from the cutoff might introduce some noise and the high-order polynomial can be overfitting. Restricting the sample to a bandwidth around the cutoff and using a linear polynomial addresses this concern. 
 
-Using the uweighted local regression, the estimated treatment effect at the cutoff is 3.06. Results are not the same in h) yet are not dramatically different. The slight disrepancy might be due to the different weights given to the observations. The triangular kernel used in h) gives less weight to observation far from the cutoff. These are equally weighted in the regression, hence capturing some noise the kernel was cancelling out. Indeed if we estimate the regression in j) using triangular kernels the estimated treatment effect at the cutoff is virtually identical to h). */
+The unweighted local regression yields an estimated treatment effect of 3.06 — not identical to (h) but not dramatically different either. The small discrepancy reflects the equal weighting of observations in the regression, which does not attenuate the influence of points farther from the cutoff as the triangular kernel does. When triangular weights are applied to the local regression in (j), the estimated treatment effect becomes virtually indistinguishable from (h). */
 
 	
 **# Question (k) Save item (h)'s bandwidth as a scalar named opt i.
@@ -391,9 +390,8 @@ graph export "$output/Graph_3.pdf", replace
 
 	/* (iii) What can we say about the robustness of our results with respect to bandwidth choice? */
 	
-		/* A: Relying on various intervals for the bandwith shows the bias-variance trade off in the estimation of the local average treatment effect. 
-The graph shows the point estimates coming from the adoption of different bandwiths and the 95% level confidence intervals. If we keep a very small bandwith by taking 0.5*opt_i the estimates is likely to be less biased but it is highly volatile. Indeed, the coefficient is not statistically significant, with wide standard errors. The variance diminishes as we increase the width of the bandwith reaching statistical significance when using the values of opt_i. The coefficient slightly increases (from 1.8 to 3.02) compared to the 0.5*opt_i interval, showing that the cost of smaller variance comes with an estimate that is likely to be marginally biased. Increasing the bandwith does not come with a great increase in variance while yielding point estimates comparable to the baseline case of opt_i */
-
+		/* A: Varying the bandwidth illustrates the classic bias-variance trade-off in estimating the local average treatment effect. At 0.5×opt_i, the estimate is likely the least biased but comes with substantial volatility — the coefficient is statistically insignificant and the confidence interval is wide. As the bandwidth widens, variance falls and the estimate reaches statistical significance around opt_i, with the coefficient rising from roughly 1.8 to 3.02. This modest upward shift suggests that the reduction in variance carries a small cost in terms of bias. Beyond opt_i, further increases in bandwidth do not substantially raise variance, and the point estimates remain close to the baseline, supporting the overall robustness of the findings to the choice of bandwidth. */	
+	
 
 *=============================================================================
 **#								Exercise 2 									*/
