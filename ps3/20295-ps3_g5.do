@@ -172,26 +172,19 @@ graph export "$output/Graph_1.png", replace
 
 	/* (i) Generate a graphic with histograms for the observations to the left and the observations to the right of our cutoff. Choose contrasting colors for the histograms on each side of our cutoff. */
 
-twoway ///
-    (histogram X if X < 0, color(navy%70)) ///
-    (histogram X if X >= 0, color(orange%70)), ///
-    xline(0, lcolor(black) lpattern(solid)) ///
-    graphregion(color(white)) ///
-	title("Vote margin distribution below/above cutoff") ///
-    xtitle("Islamic Vote Margin") ///
-    ytitle("Density") ///
-    legend(order(1 "X < 0" 2 "X >= 0")) ///
-    name(hist_1, replace)
+rdrobust Y X, kernel(triangular) p(1) bwselect(mserd)
+scalar h_left = -e(h_l)
+scalar h_right = e(h_r)
+twoway (histogram X if X >=h_left & X < 0, color(navy%70)) ///
+         (histogram X if X >= 0 & X <= h_right,  color(orange%70) xline(0, lcolor(black) lpattern(solid))), name(hist_1, replace) ///
+      graphregion(color(white)) xtitle(Islamic Vote Margin) ytitle(Density) legend(off) 
+
+local h_l = h_left
+local h_r = h_right
 	
 	/* (ii) Use `rddensity` to generate a graphic of our running variable X's estimated density. In both graphics, plot a vertical line to signal our cutoff. */
 	
-rddensity X, plot ///
-    graph_opt(name(hist_2, replace) ///
-    legend(off) ///
-    xline(0, lcolor(black) lpattern(solid)) ///
-	title("Estimated density of vote margins") ///
-    xtitle("Islamic Vote Margin") ///
-    ytitle("Density"))
+rddensity X, plot plot_range(`h_l' `h_r') graph_opt(name(hist_2, replace) legend(off) xline(0, lcolor(black) lpattern(solid)) xtitle(Islamic Vote Margin) ytitle(Density))
 	
 	/* (iii) Save a graphic named `Graph_2` containing the histogram plot and the estimated density plot side-by-side. */
 	
